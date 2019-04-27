@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<title>PA Functional Class 2014</title>
+<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
+  integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+  crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+  integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+  crossorigin=""></script>
+<style>
+  body { margin:0; padding:0;font-family: Helvetica, Arial, Sans-Serif;}
+  #map { position:absolute; top:0; bottom:0; width:100%; }
+  #topbar {
+  	background-color: rgba(0,0,0,0.8);
+  	position: fixed;
+  	height: 40px;
+  	width: 100%;
+    z-index: 401;
+  }
+  .title {
+  	color: white;
+  	font-size: 20px;
+  	font-weight: bold;
+  	line-height: 40px;
+  	text-transform: uppercase;
+  	padding-left: 15px;
+  	letter-spacing: 1px;
+  }
+  #legend {
+	position: absolute;
+	top: 50px;
+	right: 10px;
+	padding: 10px;
+	background-color: rgba(0,0,0,0.8);
+	border-radius: 4px;
+  z-index: 401;
+  display: none;
+  }
+  #toggleButton{
+    position: absolute;
+    top:6px;
+    right:6px;
+    padding: 5px;
+    z-index: 401;
+  }
+  .my-legend .legend-scale ul {
+    margin: 0;
+    margin-bottom: 0;
+    padding: 0;
+    float: left;
+    list-style: none;
+    }
+  .my-legend .legend-scale ul li {
+    font-size: 85%;
+    color: white;
+    list-style: none;
+    margin-left: 0;
+    margin-bottom: 1px;
+  }
+  .my-legend ul.legend-labels li span {
+    display: block;
+    float: left;
+    height: 5px;
+    width: 30px;
+    margin-right: 5px;
+    margin-top: 5px;  
+  }
+</style>
+
+</head>
+<body>
+
+
+
+
+<div id='map'></div>
+<div id='topbar'><div class='title'>Pennsylvania's Federal Functional Class</div></div>
+
+<button id="toggleButton">Show Legend</button>
+
+
+<div id="legend">	
+<div class='my-legend'>
+				<div class='legend-scale'>
+				<ul class='legend-labels'>
+				<li><span style='background:#00ffff;'></span>INTERSTATE HIGHWAYS (1, 11)</li>
+				<li><span style='background:#af0000;'></span>OTHER FREEWAYS AND EXPRESSWAYS (12)</li>
+				<li><span style='background:#ff0000;'></span>OTHER PRINCIPAL ARTERIAL HIGHWAYS (2,14)</li>
+				<li><span style='background:#00ff00;'></span>MINOR ARTERIALS (6,16)</li>
+				<li><span style='background:#b924ff;'></span>URBAN COLLECTOR / RURAL MAJOR COLLECTOR (7,17)</li>
+				<li><span style='background:#f5f500;'></span>RURAL MINOR COLLECTOR (8)</li>
+				<li><span style='background:#ff7d00;'></span>LOCAL ROADS (9,19)</li>
+				</ul>
+				</div>
+				</div>	
+</div>
+
+	
+<script>
+var map = L.map('map', {maxZoom: 18, minZoom: 7, zoomControl: false});
+L.tileLayer('https://{s}.tiles.mapbox.com/v3/stevec.206becde/{z}/{x}/{y}.png').addTo(map);
+map.fitBounds([[42.3,-80.6],[39.7,-74.7]]);
+
+var button = document.querySelector('#toggleButton');
+button.addEventListener('click', function(e) {
+    var legend = document.querySelector('#legend');
+    var style = getComputedStyle(legend);
+    if (style.display == "block") {
+        legend.style.display = "none";
+        e.target.innerText = "Show Legend";
+    } else {
+        legend.style.display = "block";
+        e.target.innerText = "Hide Legend";
+    }
+});
+
+</script>
+
+</body>
+</html>
+

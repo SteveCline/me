@@ -1,0 +1,146 @@
+body {
+	margin: 0;
+	padding: 0;
+	color: #333;
+	font-family: Palatino, Palatino Linotype, Palatino LT STD, Book Antiqua, Georgia, serif;
+}
+header {
+	max-width: 640px;
+	text-align: right;
+	padding-top: 20px;
+	margin-left: auto;
+	margin-right: auto;
+	letter-spacing: 2px;
+    font-size: 24px;
+    font-family: "Consolas", "Andale Mono", "Lucida Console", "Monaco", monospace;
+    color: goldenrod;
+}
+footer {
+	text-align: center;
+}
+h1,h2,h3,h4,h5,h6{
+	font-family: Helvetica, Arial, sans-serif;
+}
+p {
+	line-height: 1.6;
+	font-size: 1.2em;
+}
+hr {
+	border: 1px solid #eee;
+}
+a {
+	color: goldenrod;
+	text-decoration: none;
+}
+a:hover {
+	color: darkgoldenrod;
+}
+.bird-logo {
+	height: 55px;
+	padding-left: 10px;
+	padding-right: 20px;
+	vertical-align: text-top;
+	animation: flyInBird 1.75s ease;
+}
+@keyframes flyInBird {
+	from {
+		transform: translate(-175px, 125px) scale(0.7,0.7) rotate(18deg);
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+#menu-icon {
+	position: absolute;
+	top: 8px;
+	left: 8px;
+	background: goldenrod;
+	padding: 12px 10px;
+	border-radius: 2px;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+	cursor: pointer;
+}
+#menu-icon:hover {
+	background: darkgoldenrod;
+}
+.burger-line-1, .burger-line-2, .burger-line-3 {
+	width: 26px;
+	height: 4px;
+	background-color: #fff;
+	border-radius: 8px;
+	transition: 0.4s;
+}
+.burger-line-1 {
+	margin-top: 0;
+}
+.burger-line-2, .burger-line-3 {
+	margin-top: 4px;
+}
+.bar-swap .burger-line-1 {
+    transform: rotate(-45deg) translate(-5.5px, 5.5px);
+}
+.bar-swap .burger-line-2 {
+	opacity: 0;
+}
+.bar-swap .burger-line-3 {
+  	transform: rotate(45deg) translate(-5.5px, -5.5px);
+}
+#menu {
+	position: absolute;
+	top: 60px;
+	left: 8px;
+	padding: 8px 0;
+	font-family: Helvetica, Arial, sans-serif;
+	background: goldenrod;
+	border-radius: 2px;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+	z-index:1;
+	animation: fadeIn 0.4s;
+}
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(-8px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+#menu a {
+	color: #fff;
+	display: block;
+	padding: 12px 16px;
+	font-weight: bold;
+}
+#menu a:hover {
+	background: darkgoldenrod;
+}
+.hide {
+	display: none;
+}
+.container {
+	max-width: 640px;
+	padding: 20px;
+	margin-left: auto;
+	margin-right: auto;
+}
+.full-width {
+	width: 100%;
+}
+.callout-box {
+	border-left: 4px solid goldenrod;
+	background: rgba(218,165,32,0.2);
+	padding: 16px;
+	font-size: 1.1em;
+}
+.photo-caption {
+	font-size: 0.8em;
+	color: #888;
+}
+.js-loading *,
+.js-loading *:before,
+.js-loading *:after {
+  animation-play-state: paused !important;
+}

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset=utf-8>
+<meta content="Stephen Cline" name=author>
+<meta content="width=device-width,minimum-scale=1" name=viewport>
+<title>Projects</title>
+<link rel="stylesheet" href="asset/style.css" />
+<link rel="icon" type="image/png" href="chirp/img/favicon.png" />
+<style>
+.grid-container {
+	display: grid;
+	grid-template-columns: repeat(3,1fr);
+	grid-gap: 16px;
+}
+@media (max-width:600px) {
+	.grid-container {
+		grid-template-columns: repeat(2,1fr);
+		grid-gap: 8px;
+	}
+}
+.grid-item {
+	position: relative;
+}
+.grid-item 	img {
+	width:100%;
+	display: block;
+}
+.grid-item:hover img {
+	filter: brightness(60%);
+}
+.grid-item-text {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	opacity: 0;
+	color: #fff;
+	font-size: 1.1em;
+	text-align: center;
+}
+.grid-item:hover .grid-item-text {
+	opacity: 1;
+}
+
+</style>
+</head>
+<body>
+<div id="menu-icon">
+	<div class="burger-line-1"></div>
+	<div class="burger-line-2"></div>
+	<div class="burger-line-3"></div>
+</div>
+<div id="menu" class="hide">
+	<a href="about.html">About</a>
+	<a href="thechirp.html">The Chirp</a>
+</div>	
+<header>Projects<img class="bird-logo" src="chirp/img/bird.svg"></header>	
+
+<div class="container grid-container">
+	<div class="grid-item">
+		<a href="https://vector.rocks" target="_blank">
+			<img src="projects/img/thumbs/thumb_vector.jpg">
+			<div class="grid-item-text">Vector<br>A free web GIS data editor/viewer</div>
+		</a>
+	</div>
+	<div class="grid-item">
+		<a href="projects/functionalclass.html" target="_blank">
+			<img src="projects/img/thumbs/thumb_functional.jpg">
+			<div class="grid-item-text">Pennsylvania's Federal Functional Class Map</div>
+		</a>
+	</div>
+	<div class="grid-item">
+		<a href="projects/housing.html" target="_blank">
+			<img src="projects/img/thumbs/thumb_housing.jpg">
+			<div class="grid-item-text">Housing Infographic</div>
+		</a>
+	</div>
+	<div class="grid-item">
+		<a href="https://twitter.com/SteveClineBird/status/1086268013832269824" target="_blank">
+			<img src="projects/img/thumbs/thumb_sticker.jpg">
+			<div class="grid-item-text">Sticker Design</div>
+		</a>
+	</div>
+	<div class="grid-item">
+		<a href="https://stevecline.github.io/mylist/" target="_blank">
+			<img src="projects/img/thumbs/thumb_mylist.jpg">
+			<div class="grid-item-text">Simple List</div>
+		</a>
+	</div>
+	<div class="grid-item">
+		<a href="https://stevecline.github.io/dinner/whatshouldweeatfordinner.html" target="_blank">
+			<img src="projects/img/thumbs/thumb_dinner.jpg">
+			<div class="grid-item-text">Random Dinner Picker</div>
+		</a>
+	</div>
+	<div class="grid-item">
+		<a href="projects/leaflet-find-center.html" target="_blank">
+			<img src="projects/img/thumbs/thumb_leafletfindcenter.jpg">
+			<div class="grid-item-text">Leaflet Find Center</div>
+		</a>
+	</div>
+	<div class="grid-item">
+		<a href="projects/turf-kmeans-example.html" target="_blank">
+			<img src="projects/img/thumbs/thumb_kmeans.jpg">
+			<div class="grid-item-text">Turf.js K-Means Example</div>
+		</a>
+	</div>
+	<div class="grid-item">
+		<a href="projects/turf-binning-example.html" target="_blank">
+			<img src="projects/img/thumbs/thumb_binning.jpg">
+			<div class="grid-item-text">Turf.js Binning Example</div>
+		</a>
+	</div>
+	<div class="grid-item">
+		<a href="https://stevecline.github.io/impact-calculator/impact-calculator.html" target="_blank">
+			<img src="projects/img/thumbs/thumb_impact.jpg">
+			<div class="grid-item-text">Turf.js Environmental Impact Calculator</div>
+		</a>
+	</div>
+	<div class="grid-item">
+		<a href="projects/hampden.html" target="_blank">
+			<img src="projects/img/thumbs/thumb_hampden.jpg">
+			<div class="grid-item-text">Hampden Township Infographic</div>
+		</a>
+	</div>
+	<div class="grid-item">
+		<a href="projects/img/midtown_wayfinding.jpg" target="_blank">
+			<img src="projects/img/thumbs/thumb_midtown.jpg">
+			<div class="grid-item-text">Midtown Wayfinding Map</div>
+		</a>
+	</div>
+	<div class="grid-item">
+		<a href="projects/img/mapart.jpg" target="_blank">
+			<img src="projects/img/thumbs/thumb_mapart.jpg">
+			<div class="grid-item-text">Artistic Map Print</div>
+		</a>
+	</div>
+	<div class="grid-item">
+		<a href="https://theburgnews.com/in-the-burg/who-works-in-harrisburg" target="_blank">
+			<img src="projects/img/thumbs/thumb_hbgworkers.jpg">
+			<div class="grid-item-text">TheBurg Who Works in Harrisburg?</div>
+		</a>
+	</div>
+	<div class="grid-item">
+		<a href="https://theburgnews.com//wp-content/uploads/2013/07/TheBurg_8.13_WEB.pdf" target="_blank">
+			<img src="projects/img/thumbs/thumb_burg2013.jpg">
+			<div class="grid-item-text">TheBurg Non-Profit Problem August 2013</div>
+		</a>
+	</div>
+	<div class="grid-item">
+		<a href="projects/img/theBurg_homicide.jpg" target="_blank">
+			<img src="projects/img/thumbs/thumb_homicide.jpg">
+			<div class="grid-item-text">TheBurg Homicides</div>
+		</a>
+	</div>
+	<div class="grid-item">
+		<a href="http://talkpatransportation.com/2019TYP/" target="_blank">
+			<img src="projects/img/thumbs/thumb_typ2019.jpg">
+			<div class="grid-item-text">STC TYP 2019</div>
+		</a>
+	</div>
+	<div class="grid-item">
+		<a href="https://www.paprojectpath.org/storymap.html" target="_blank">
+			<img src="projects/img/thumbs/thumb_pottersmills.jpg">
+			<div class="grid-item-text">A Journey To Potters Mills</div>
+		</a>
+	</div>
+	<div class="grid-item">
+		<a href="projects/img/JourneyToWork.jpg" target="_blank">
+			<img src="projects/img/thumbs/thumb_journeytowork.jpg">
+			<div class="grid-item-text">Journey to Work Graphic</div>
+		</a>
+	</div>
+	<div class="grid-item">
+		<a href="projects/img/reading_wayfinding.pdf" target="_blank">
+			<img src="projects/img/thumbs/thumb_readingdid.jpg">
+			<div class="grid-item-text">Reading Wayfinding Map</div>
+		</a>
+	</div>
+	<!--
+	<div class="grid-item">
+		<a href="#" target="_blank">
+			<img src="projects/img/thumbs/thumb_radon.jpg">
+			<div class="grid-item-text">Radon in Pennsylvania</div>
+		</a>
+	</div>
+	<div class="grid-item">
+		<a href="#" target="_blank">
+			<img src="projects/img/thumbs/thumb_pop.jpg">
+			<div class="grid-item-text">Population Pyramid</div>
+		</a>
+	</div>
+	<div class="grid-item">
+		<a href="#" target="_blank">
+			<img src="projects/img/thumbs/thumb_3Drender.jpg">
+			<div class="grid-item-text">3D Building Renderings</div>
+		</a>
+	</div>
+	-->
+</div>
+<footer><hr><p>&copy Stephen Cline</p></footer>
+<script src="asset/script.js"></script>
+</body>
+</html>

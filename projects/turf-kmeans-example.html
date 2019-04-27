@@ -1,0 +1,116 @@
+<html>
+<head>
+    <meta charset=utf-8 />
+	<title>Turf K-Means Cluster Example</title>
+	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
+  integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+  crossorigin=""/>
+	<script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+  integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+  crossorigin=""></script>
+	<script src="https://npmcdn.com/@turf/turf@5.1.6/turf.min.js"></script>
+	
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+		#control {
+			position: fixed;
+			top: 10px;
+			left: 60px;
+			z-index: 401;
+			padding: 10px;
+		    background: #013243;
+		    border-radius: 3px;
+		    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+		}
+		
+		g > path {
+			-webkit-animation: fadein 600ms;
+			animation: fadein 600ms;
+		}
+		@-webkit-keyframes fadein {
+			from { opacity: 0; }
+			to   { opacity: 1; }
+		}
+		@keyframes fadein {
+			from { opacity: 0; }
+			to   { opacity: 1; }
+		}
+		
+		
+    </style>
+</head>
+<body>
+
+
+<div id="map"></div>
+<div id="control">
+	<input type="number" id="input-value" value="40" step="10" min="10" max="1000">
+	<button id="the-button">Click Me</button>
+</div>
+
+
+<script>
+var map = L.map("map").setView([41,-77],8);
+var streetsBasemap = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}").addTo(map);
+
+
+//GLOBAL LAYERS
+var layerRandomPnts = L.geoJson(null);
+var layerPolygons = L.layerGroup(null);
+
+//GET FEATURE COLOR BASED ON CLUSTER 
+function getColor(x){
+				if (x === 0){return "black"}
+				if (x === 1){return "blue"}
+				if (x === 2){return "green"}
+				if (x === 3){return "red"}
+			}	
+
+function getKmeansClusters(count){
+
+	var bboxArray = JSON.parse("[" + map.getBounds().toBBoxString() + "]");
+	var dataRandomPoints = turf.randomPoint(count, {bbox: bboxArray});
+	var clustered = turf.clustersKmeans(dataRandomPoints, {numberOfClusters: 4});
+	//REMOVE LAYERS FROM MAP
+	map.removeLayer(layerRandomPnts);
+	layerPolygons.clearLayers();
+	
+	layerRandomPnts = L.geoJson(clustered, {pointToLayer: function (feature, latlng) {
+			return L.circleMarker(latlng, {
+				radius: 8,
+				fillColor: getColor(feature.properties.cluster),
+				color: "#000",
+				weight: 1,
+				opacity: 1,
+				fillOpacity: 1
+			});
+		}});
+	turf.clusterEach(clustered, 'cluster', function (cluster, value, index) {
+		
+		var data = turf.concave(turf.getCluster(cluster, {cluster: index}));
+		
+		var layer = L.geoJson(data, {style:function(feature){
+			return {color: getColor(index)}
+		}});
+		
+		layerPolygons.addLayer(layer);
+		
+	});
+	//ADD LAYERS TO MAP
+	map.addLayer(layerPolygons);
+	map.addLayer(layerRandomPnts);
+}
+
+//RUN FUNCTION ON CLICK
+var button = document.getElementById("the-button");
+button.addEventListener("click", function(){
+	var value = document.getElementById("input-value").value;
+	//console.log(value);
+	getKmeansClusters(value);
+});
+
+</script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<html>
+<head>
+    <meta charset=utf-8 />
+	<title>Turf Binning Example</title>
+	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
+  integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+  crossorigin=""/>
+	<script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+  integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+  crossorigin=""></script>
+	<script src="https://npmcdn.com/@turf/turf@5.1.6/turf.min.js"></script>
+	
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+		#control {
+			position: fixed;
+			top: 10px;
+			left: 60px;
+			z-index: 401;
+			padding: 10px;
+		    background: #013243;
+		    border-radius: 3px;
+		    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+		}
+		g > path {
+			-webkit-animation: fadein 700ms;
+			animation: fadein 700ms;
+		}
+		@-webkit-keyframes fadein {
+			from { opacity: 0; }
+			to   { opacity: 1; }
+		}
+		@keyframes fadein {
+			from { opacity: 0; }
+			to   { opacity: 1; }
+		}
+		
+    </style>
+</head>
+<body>
+<div id="control">
+	<input type="number" id="input-value" value="2" step="0.5" min="1" max="4">
+	<button id="the-button">Click Me</button>
+</div>
+<div id="map"></div>
+
+
+<script>
+var map = L.map("map");
+
+//BOUNDING BOX AND FIT
+var bbox = [-76.7213,39.7215,-75.8731,40.3158];
+map.fitBounds([[bbox[1],bbox[0]],[bbox[3],bbox[2]]]);
+//BASEMAP
+var streetsBasemap = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}").addTo(map);
+//RANDOM POINTS AND LAYER
+var pointsData = turf.randomPoint(1000, {bbox: bbox});
+var layerPoints = L.geoJson(pointsData, {pointToLayer: function (feature, latlng) {
+			return L.circleMarker(latlng, {
+				radius: 5,
+				fillColor: "#9b59b6",
+				color: "#000",
+				weight: 1,
+				opacity: 1,
+				fillOpacity: 0.8
+			});
+		}}).addTo(map);
+
+//GLOBAL HOLDER FOR GRID
+var layerGrid = L.geoJson(null);
+
+
+function getGrid(size){
+	var s = 0.04;
+	var bboxGrid = [bbox[0] - s, bbox[1] - s, bbox[2] + s, bbox[3] + s];
+	var grid = turf.squareGrid(bboxGrid, size, {units: "miles"});
+	
+	for (var i = 0; i < grid.features.length; i++){
+		var pnts = turf.pointsWithinPolygon(layerPoints.toGeoJSON(), grid.features[i]);
+		grid.features[i].properties.count = pnts.features.length;		
+	}
+	function getColor(x){
+				if (x > 7){return "#0c2c84"}
+				if (x > 6){return "#225ea8"}
+				if (x > 5){return "#1d91c0"}
+				if (x > 4){return "#41b6c4"}
+				if (x > 3){return "#7fcdbb"}
+				if (x > 2){return "#c7e9b4"}
+				if (x > 1){return "#edf8b1"}
+				if (x > 0){return "#ffffe9"}
+			}
+	map.removeLayer(layerPoints).removeLayer(layerGrid);
+	layerGrid = L.geoJson(grid, {style: function(feature){
+		return {
+			color: "#888",
+			fillColor: getColor(feature.properties.count),
+			weight: 0.5,
+			opacity: 1,
+			fillOpacity: 0.8
+			};
+		},
+		filter: function(feature, layer){
+			return feature.properties.count > 0;
+		},
+		onEachFeature: function(feature,layer){
+			layer.bindPopup("There are " + feature.properties.count  + " points in this cell");
+		}
+	}).addTo(map);
+
+}
+
+
+//RUN FUNCTION ON CLICK
+var button = document.getElementById("the-button");
+button.addEventListener("click", function(){
+	var value = document.getElementById("input-value").value;
+	//console.log(value);
+	getGrid(value);
+});
+
+
+
+L.control.layers("", {"Points": layerPoints}, {collapsed:false}).addTo(map);
+
+
+
+</script>
+
+</body>
+</html>

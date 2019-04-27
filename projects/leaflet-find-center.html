@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8>
+<meta content="Stephen Cline" name=author>
+<meta content="width=device-width,minimum-scale=1" name=viewport>
+<title>Leaflet Find Center</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css"
+  integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+  crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
+  integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg=="
+  crossorigin=""></script>
+
+<style type="text/css">
+body { margin:0; padding:0;}
+#map { position:absolute; top:0; bottom:0; width:100%;}
+h1 {
+    position: absolute;
+    width: 100%;
+	color: #013243;
+    margin: auto;
+    text-align: center;
+	z-index: 401;
+	font-family: "Consolas", "Andale Mono", "Lucida Console", "Monaco", monospace;
+	text-shadow: 1px 1px 4px #fff;
+}
+select {
+    position: fixed;
+    top: 10px;
+    left: 54px;
+    z-index: 401;
+}
+code span {
+	color: #7dc8ff;
+}
+.container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    padding: 12px 16px;
+    background: #013243;
+    margin: 10px;
+    color: #fff;
+    font-size: 1.1em;
+    border-radius: 3px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    z-index: 1001;
+}
+@media only screen and (max-width: 750px) {
+  .leaflet-control-container {
+	display: none;
+  }
+  select {
+	display: none;
+  }
+}
+</style>
+
+</head>
+<body>
+<h1>Leaflet Find Center</h1>
+<select onchange="changeIncrement(this)">
+	<option value="0" selected>Zoom Increment 1.0</option>
+	<option value="1">Zoom Increment 0.5</option>
+	<option value="2">Zoom Increment 0.25</option>
+</select>
+<code class="container">
+	var map = L.map(<span style="color:#ff7878;">'map'</span>).setView([<span id="lat"></span>,<span id="lng"></span>], <span id="zoom"></span>);<br>
+	<span style="color:#a0ff9b;">// Or use this for bounds</span><br>
+	map.fitBounds([[<span id="north"></span>,<span id="east"></span>],[<span id="south"></span>,<span id="west"></span>]]);
+</code>
+<div id='map'></div>
+<script>
+var map = L.map('map', {worldCopyJump: true}).setView([39.8,-98.5], 4);
+var basemapStreets = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", {attribution: "<a href='http://www.esri.com/'>esri</a>"}).addTo(map);
+var basemapTopographic = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}", {attribution: "<a href='http://www.esri.com/'>esri</a>"});
+var basemapImagery = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {attribution: "<a href='http://www.esri.com/'>esri</a>"});
+var clarity = L.tileLayer("https://clarity.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {attribution: "<a href='http://www.esri.com/'>esri</a>"});
+L.control.layers({
+	"Streets": basemapStreets,
+	"Topographic": basemapTopographic,
+	"Imagery": basemapImagery,
+	"Clarity": clarity
+}).addTo(map);
+
+var center = map.getCenter();
+var marker = L.marker(center, {draggable:true,autoPan:true}).addTo(map).bindPopup("Drag Me!",{closeButton:false}).openPopup();
+var zoom = document.getElementById("zoom");
+var lat = document.getElementById("lat");
+var lng = document.getElementById("lng");
+var north = document.getElementById("north");
+var east = document.getElementById("east");
+var south = document.getElementById("south");
+var west = document.getElementById("west");
+
+zoom.innerText = map.getZoom();
+lat.innerText = center.lat;
+lng.innerText = center.lng;
+north.innerText = map.getBounds().getNorth().toFixed(5);
+east.innerText = map.getBounds().getEast().toFixed(5);
+south.innerText = map.getBounds().getSouth().toFixed(5);
+west.innerText = map.getBounds().getWest().toFixed(5);
+
+map.on("zoomend", function() {
+    zoom.innerHTML = map.getZoom();
+});
+map.on("move", function() {
+    var c = map.getCenter();
+    var b = map.getBounds();
+    marker.setLatLng(c);
+    lat.innerText = c.lat.toFixed(6);
+    lng.innerText = c.lng.toFixed(6);
+    north.innerText = b.getNorth().toFixed(5);
+    east.innerText = b.getEast().toFixed(5);
+    south.innerText = b.getSouth().toFixed(5);
+    west.innerText = b.getWest().toFixed(5);
+});
+marker.on("dragend", function(){
+    var drop = marker.getLatLng();
+    map.panTo(drop);
+});
+marker.on("popupclose", function(){
+    marker.unbindPopup();
+});
+function changeIncrement(x){
+    if (x.value === "0"){
+        map.options.zoomDelta = 1;
+        map.options.zoomSnap = 1;
+        map.options.wheelPxPerZoomLevel = 60;
+    }
+    if (x.value === "1"){
+        map.options.zoomDelta = 0.5;
+        map.options.zoomSnap = 0.5;
+        map.options.wheelPxPerZoomLevel = 90;
+    }
+    if (x.value === "2"){
+        map.options.zoomDelta = 0.25;
+        map.options.zoomSnap = 0.25;
+        map.options.wheelPxPerZoomLevel = 200;
+    }
+}
+</script>
+</body>
+</html>
