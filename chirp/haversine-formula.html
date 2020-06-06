@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset=utf-8>
+<meta content="Stephen Cline" name=author>
+<meta content="width=device-width,minimum-scale=1" name=viewport>
+<title>The Chirp</title>
+<link rel="stylesheet" href="../asset/style.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" />
+<style>
+    #map {position: relative; height:400px;}
+    pre {
+	    border-left: 4px solid goldenrod;
+		background: rgba(218,165,32,0.2);
+	    page-break-inside: avoid;
+	    line-height: 1.4;
+	    overflow: auto;
+	    padding: 0 16px;
+	    word-wrap: break-word;
+	}
+ </style>
+<link rel="icon" type="image/png" href="img/favicon.png" />
+</head>
+<body>
+<div id="menu-icon">
+	<div class="burger-line-1"></div>
+	<div class="burger-line-2"></div>
+	<div class="burger-line-3"></div>
+</div>
+<div id="menu" class="hide">
+	<a href="../index.html">About</a>
+	<a href="../projects.html">Projects</a>
+	<a href="../thechirp.html">The Chirp</a>
+</div>	
+<header>The Chirp<img class="bird-logo" src="../chirp/img/bird.svg"></header>	
+
+<div class="container">	
+	<h1>Haversine Formula</h1>
+	<p>5/23/2020</p>
+	<hr>
+	<p>I have not posted an article in a while. To get back into writing, I decided I will do some short technical articles for other geo web develpers of the world. Tips and tricks to help along the way and have a record for myself. The first one will be on the <a href="https://en.wikipedia.org/wiki/Haversine_formula">Haversine Formula</a>. The Haversine Formula calculates the <a href="https://en.wikipedia.org/wiki/Great-circle_distance">great circle</a> or spherical distance between two points on a sphere, such as the earth. For web map developers like myself, this formula becomes very useful.</p>
+	<p>While there are plenty of resources on the internet to figure this out, I thought it would be handy to have my own JavaScript function for this calcuation. Any web map developer should have a function like this ready to go. In some situations people use <a href="https://turfjs.org/docs/#distance">Turf's distance</a> and users of Leaflet have the built-in <a href="https://leafletjs.com/reference-1.6.0.html#map-distance">distance</a> method but why not have another!</p>
+	<p>The map below demostrates an example case using the Haversine Formula. Drag the markers to find the distance between them. Result is rounded to the nearest mile.</p>
+	<p>Haversine Distance: <span id="distance" style="font-weight:bold;"></span>.<br>Leaflet's map.distance: <span id="leaf-distance" style="font-weight:bold;"></span>.</p>
+	<div id="map" class="full-width"></div>
+	<p>The function I made takes 4 arguments, the long/lat of the first point then the long/lat of the second point. These are all expecting decimal degrees in WGS84. The function turns the decimal degrees to radians, then finds the deltas, then applys these variables to the Haversine Formula itself.</p>
+	<pre><code>
+function getDistanceInMiles(ddLng1,ddLat1,ddLng2,ddLat2) {
+    function degToRad(deg) {return deg * Math.PI/180;}
+    // convert decimal degree coordinates to radians
+    var lng1 = degToRad(ddLng1);
+    var lat1 = degToRad(ddLat1);
+    var lng2 = degToRad(ddLng2);
+    var lat2 = degToRad(ddLat2);
+    var deltaLat = lat2 - lat1;
+    var deltaLng = lng2 - lng1;
+    // Haversine Formula
+    var R = 3961; //Earth's Radius, Miles = 3961, Kilometers = 6371, Feet = 20914080
+    var a = Math.pow(Math.sin(deltaLat/2),2) + Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(deltaLng/2),2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    var d = R * c;
+    return d;
+}
+
+</code></pre>
+	<p>It is worth reminding, the earth is lumpy and not a perfect sphere and the Haversine Formula is based on the spherical model of the earth. As for the accuracy of the formula, I have tested it at close distances in Pennsylvania vs. projected GIS data and it is usually accurate within a foot or two. Note that the 'R' value, Earth's radius, changes depending on your position on the globe. This can be adjusted for your region where your measurements will happen most often. Keep this in mind as you determine if this function is right for you.</p>
+</div>
+<footer><hr><p>&copy Stephen Cline</p></footer>
+<script src="../asset/script.js"></script>
+<script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet.js"></script>
+<script>
+var distanceDiv = document.getElementById("distance");
+var leafletDistanceDiv = document.getElementById("leaf-distance");
+var map = L.map("map", {zoomControl: false, boxZoom: false,doubleClickZoom: false, dragging: false, scrollWheelZoom: false});
+map.fitBounds([[48.82059,-70.24824],[26.75925,-123.46121]]);
+L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",{attribution: "<a href='http://www.esri.com/'>esri</a>"}).addTo(map);
+
+var marker1 = L.marker([37.1165,-113.5766], {draggable:true}).addTo(map);
+var marker2 = L.marker([40.4302,-80.0024], {draggable:true}).addTo(map);
+var line = L.polyline([[37.1165,-113.5766],[40.4302,-80.0024]], {color:"red"}).addTo(map);
+
+marker1.on("drag", function(){
+  calcDistance();
+});
+marker2.on("drag", function(){
+  calcDistance();
+});
+calcDistance();
+
+function calcDistance(){
+  var lng1 = marker1.getLatLng().lng;
+  var lat1 = marker1.getLatLng().lat;
+  var lng2 = marker2.getLatLng().lng;
+  var lat2 = marker2.getLatLng().lat;
+  var distance = getDistance(lng1,lat1,lng2,lat2);
+  var rounded = Math.round(distance);
+  distanceDiv.innerText = rounded + " miles";
+  var leafDistanceMeters = map.distance(marker1.getLatLng(),marker2.getLatLng());
+  leafletDistanceDiv.innerText = Math.round(leafDistanceMeters / 1609.34) + " miles";
+  line.setLatLngs([[lat1,lng1],[lat2,lng2]]);
+}
+
+function getDistance(ddLng1,ddLat1,ddLng2,ddLat2) {
+    function degToRad(deg) {return deg * Math.PI/180;}
+    // convert decimal degree coordinates to radians
+    var lng1 = degToRad(ddLng1);
+    var lat1 = degToRad(ddLat1);
+    var lng2 = degToRad(ddLng2);
+    var lat2 = degToRad(ddLat2);
+    var deltaLat = lat2 - lat1;
+    var deltaLng = lng2 - lng1;
+    // Haversine Formula
+    var R = 3961; //Miles is 3961, Km is 6371, feet is 20914080
+    var a = Math.pow(Math.sin(deltaLat/2),2) + Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(deltaLng/2),2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    var d = R * c;
+    return d;
+}
+
+marker1.bindPopup("Drag Me!",{closeButton:false}).openPopup();
+marker1.on("popupclose", function(){
+    marker1.unbindPopup();
+});
+
+</script>
+
+
+</body>
+</html>
