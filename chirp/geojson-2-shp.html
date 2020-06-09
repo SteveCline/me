@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset=utf-8>
+<meta content="Stephen Cline" name=author>
+<meta content="width=device-width,minimum-scale=1" name=viewport>
+<title>The Chirp</title>
+<link rel="stylesheet" href="../asset/style.css" />
+<style>
+    #map {position: relative; height:400px;}
+    pre {
+	    border-left: 4px solid goldenrod;
+		  background: rgba(218,165,32,0.2);
+	    page-break-inside: avoid;
+	    line-height: 1.4;
+	    overflow: auto;
+	    padding: 0 16px;
+	    word-wrap: break-word;
+	}
+ </style>
+<link rel="icon" type="image/png" href="img/favicon.png" />
+</head>
+<body>
+<div id="menu-icon">
+	<div class="burger-line-1"></div>
+	<div class="burger-line-2"></div>
+	<div class="burger-line-3"></div>
+</div>
+<div id="menu" class="hide">
+	<a href="../index.html">About</a>
+	<a href="../projects.html">Projects</a>
+	<a href="../thechirp.html">The Chirp</a>
+</div>	
+<header>The Chirp<img class="bird-logo" src="../chirp/img/bird.svg"></header>	
+
+<div class="container">	
+	<h1>GeoJSON to Shapefile</h1>
+	<p>6/9/2020</p>
+	<hr>
+	<p>No secret, I like geojson as geospatial data format. I just think it is simple, flexible, and interoperable. However, most of the GIS world likes shapefiles. They won't go away and it is probably the snarkiest data format on <a href="https://twitter.com/shapefiie?lang=en">twitter</a>. When people want geospatial data, they want a shapefile. Slightly depressing but it is still mostly true from my experience.</p>
+  <blockquote class="twitter-tweet"><p>You know what gives me comfort? –– <br>You know, I know, all my detractors know: when the chips are down y&#39;all will &quot;Export to shapefile&quot; <a href="https://t.co/xoBxpbzWJj">pic.twitter.com/xoBxpbzWJj</a></p>&mdash; ShapefiIe (@shapefiIe) <a href="https://twitter.com/shapefiIe/status/1054451201620828166?ref_src=twsrc%5Etfw">October 22, 2018</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+  <p>This past month, I updated my web-based geojson editor <a href="https://vector.rocks/">vector.rocks</a> to have the option to download the data as shapefile. Not surprisingly, this was one of the first requests I got when I first shared this project with my coworkers. My first thought was to use <a href="https://github.com/mapbox/shp-write">shp-write</a> to do the conversion. This project doesn't seem to be well maintained and intially didn't work for me, but I did get shp-write working after browsing some of the issues. I also noticed it didn't handle multi-part features and I wanted to minimize adding JavaScript so I kept looking.</p>
+  <p>I next turned to <a href="http://ogre.adc4gis.com/">ogr2ogr</a> web client. I have been using this site for years to quickly convert data back and forth between geojson and other formats. At the bottom of the page is a short section for 'Acessing Ogre using a POST request'. No examples are given and I only have a little experience doing POST requests. I struggled for a bit to get this implemination right. Intitally it was getting the header information correct, then it was handling the response as a blob.</p>
+  <p>In this example I used the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch">fetch browser API</a> instead of an XHR request. I actually put together this exact same function as an XHR request as well, but for some reason I gravitate to fetch because I feel it is simple. Any thoughts on prefered async techniques?</p>
+  <pre><code>
+function convertGeoJsonToShpThenDownload(geoJson,filename){
+  var url = "https://ogre.adc4gis.com/convertJson";
+  var options = {
+    method: "POST",
+    headers: {"Content-type":"application/x-www-form-urlencoded"}, 
+    body: "json=" + JSON.stringify(geoJson)
+  };
+  fetch(url,options)
+  .then(function(response){
+    return response.blob();
+  })
+  .then(function(data){
+    var link = document.createElement("a");
+    document.body.append(link);
+    link.href = URL.createObjectURL(data);
+    link.download = filename + ".zip";
+    link.click();
+  });
+}
+
+</code></pre>
+<p>What this function does is take the response as a blob, creates an anchor element and then invokes a click event on it to start the download. The anchor element does not appear to be visible in your page. This initally was a concern of mine, but I found it not to be a problem for my use.</p>
+<p>The one concern with this technique is geoJSON of differing geomeries as shapefiles can only support 1 geometry type, but this was not a concern of mine for Vector.</p>
+<p>Add this function to any button's event listener and all of a sudden you have a shiny button to download some geoJSON as a shapefile. The one unsolved concern is how to set the name of the shapefile itself from the resulting zipped download.</p>
+</div>
+<footer><hr><p>&copy Stephen Cline</p></footer>
+<script src="../asset/script.js"></script>
+<script>
+
+
+
+
+</script>
+
+
+</body>
+</html>
