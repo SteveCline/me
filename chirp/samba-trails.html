@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset=utf-8>
+<meta content="Stephen Cline" name=author>
+<meta content="width=device-width,minimum-scale=1" name=viewport>
+<title>The Chirp</title>
+<link rel="stylesheet" href="../asset/style.css" />
+<link rel="icon" type="image/png" href="img/favicon.png" />
+<style>
+.pic {
+	width:40%;float:right;	
+}
+@media screen and (max-width: 440px) {
+	.pic {
+		width: 50%;
+	}
+}
+</style>
+</head>
+<body>
+<div id="menu-icon">
+	<div class="burger-line-1"></div>
+	<div class="burger-line-2"></div>
+	<div class="burger-line-3"></div>
+</div>
+<div id="menu" class="hide">
+	<a href="../index.html">About</a>
+	<a href="../projects.html">Projects</a>
+	<a href="../thechirp.html">The Chirp</a>
+</div>	
+<header>The Chirp<img class="bird-logo" src="../chirp/img/bird.svg"></header>	
+
+<div class="container">	
+	<h1>SAMBA Trails dot Bike</h1>
+	<p>6/11/2020</p>
+	<hr>
+	<p>My main hobby these days is mountain biking. I love it. Being in nature, getting excercise, challenging myself and giving me thrills all at the same time.</p>
+	<img class="pic" src="img/blogpics/samba.png">
+	<p>This spring brought my two passions of maps and biking together for a project with my local group, <a href="http://sambabiker.com/samba/">Susquehanna Area Mountain Bike Association</a> (SAMBA).</p>
+	<p>I am excited to announce the release of SAMBA's new trails web app <a href="https://sambatrails.bike/">sambatrails.bike</a> This trails map was designed to be mobile first, but obviously works just the same on a desktop computer. It has a complete list of all the trail systems they maintain and locates all the regional sponsors to the organization. A ride schedule is posted under the menu button as well, which is fed by a shared google sheet acting as a light database for this info.</p>
+	<p>I used <a href="https://docs.mapbox.com/mapbox-gl-js/api/">Mapbox GL</a> as the map API and was my first big project using this particular library. Mapbox GL feeds vector tiles and allows for continuous zoom along with map rotation. While I do love <a href="https://leafletjs.com/">Leaflet</a>, the right choice for a map with a mobile focus and purpose like this is Mapbox GL. I used a custom basemap, very closely based off an existing map titled <a href="https://www.mapbox.com/gallery/#frank">Frank</a>. <i>A map style inspired by Frank Lloyd Wright</i> is the tagline for this map designed by <a href="http://www.claretrainor.com/">Clare Trainor</a>. As a fan of Frank's work, especially his <a href="https://en.wikipedia.org/wiki/Usonia">Usonian</a> period, it was no question I was drawn to this awesome map style.</p>
+	<p>In later posts, I will touch on some of the code details including building the elevation profile. The elevation profile was created in vanilla JavaScript and was easily the most complicated part of the build. I wanted to create it from scratch myself so the choice to not use any existing libraries was purposeful.</p>
+	<p>Pennsylvania has some great mountain biking which I believe is under appreciated. Hopefully <a href="https://sambatrails.bike/">sambatrails.bike</a> will help people get out and shred!</p>
+</div>
+<footer><hr><p>&copy Stephen Cline</p></footer>
+<script src="../asset/script.js"></script>
+</body>
+</html>
