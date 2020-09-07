@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset=utf-8>
+<meta content="Stephen Cline" name=author>
+<meta content="width=device-width,minimum-scale=1" name=viewport>
+<title>The Chirp</title>
+<link rel="stylesheet" href="../asset/style.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" />
+<style>
+    #map {position: relative; height:400px;}
+    #map-2 {position: relative; height:400px;}
+    pre {
+	    border-left: 4px solid goldenrod;
+		background: rgba(218,165,32,0.2);
+	    page-break-inside: avoid;
+	    line-height: 1.4;
+	    overflow: auto;
+	    padding: 0 16px;
+	    word-wrap: break-word;
+	}
+ </style>
+<link rel="icon" type="image/png" href="img/favicon.png" />
+</head>
+<body>
+<div id="menu-icon">
+	<div class="burger-line-1"></div>
+	<div class="burger-line-2"></div>
+	<div class="burger-line-3"></div>
+</div>
+<div id="menu" class="hide">
+	<a href="../index.html">About</a>
+	<a href="../projects.html">Projects</a>
+	<a href="../thechirp.html">The Chirp</a>
+</div>	
+<header>The Chirp<img class="bird-logo" src="../chirp/img/bird.svg"></header>	
+
+<div class="container">	
+	<h1>Esri REST API</h1>
+	<p>9/7/2020</p>
+	<hr>
+	<p>Here is a situation I find myself in frequently. I have data in an Esri Feature Service, and I want to add the data to a non-Esri web map. In my common situation this might be a <a href="https://leafletjs.com/">Leaflet</a> or <a href="https://docs.mapbox.com/mapbox-gl-js/api/">Mapbox GL</a> map. This is a popular enough workflow that Esri made a plugin for Leaflet named <a href="https://esri.github.io/esri-leaflet/">Esri Leaflet</a>. While Esri Leaflet is a neat tool, sometimes you just don't need it.</p>
+    <p>This article is about Esri's REST API using Javascript to query data to geojson which can then be displayed in web maps made with Leaflet, Mapbox GL and other APIs. Querying data in Esri's REST API is rather powerful and has pretty quick response times from my experience. Using the REST API to query data in non-Esri apps seems like a lesser used technique in the geospatial world. Maybe we can change that today.</p>
+    <p>In a nutshell, the Esri REST API allows web developers to request ArcServer or Hosted Feature layers via URL request to what is commonly referred to the data's "REST endpoint". A series of parameters are added to the end of the layer's endpoint URL to specify what is being requested. The most common operation is to query the data, but you can also do data editing operations and even administrative tasks like changing service definitions. This article will focus on querying the data and will cover doing spatial queries which is lesser known and is super cool.</p>
+    <p>So what is a REST Endpoint? You can find them via Esri open data portals that many organizations use. A URL endpoint will end with an array based integer, pointing to the specific layer of a Feature or Map Service. <a href="https://twitter.com/MappingSupport?lang=en">Joseph Elfelt</a>, manages a list of <a href="https://mappingsupport.com/p/surf_gis/list-federal-state-county-city-GIS-servers.pdf">thousands of GIS Servers</a> to help you find the public data you need. Below are some examples.</p>
+    <pre><code>
+//EXAMPLE REST ENDPOINTS
+
+//USDA
+https://www.usda.gov/giseas1/rest/services/ExcessFood/ExcessFood/MapServer/2
+//ALLEGHENY COUNTY 
+https://gisdata.alleghenycounty.us/arcgis/rest/services/OPENDATA/Parcels/MapServer/0
+//PENNDOT
+https://gis.penndot.gov/arcgis/rest/services/opendata/countyboundary/MapServer/0
+//DVRPC
+https://arcgis.dvrpc.org/portal/rest/services/Planning/DVRPC_LandUse_2015/FeatureServer/0
+    </code></pre>
+    <p>Now that we know what an Esri REST endpoint looks like, next we need to understand the REST API's <a href="https://developers.arcgis.com/rest/services-reference/query-feature-service-layer-.htm">query perameters</a>. At the end of the endpoint URL a query starts with <i>/query?</i> then the parameter list each separated by an <i>&</i>. Since this article focuses on returning the data as geojson, we need to tack on the parameter <i>f=geojson</i>. Copy and paste these examples into your browser to see what is returned.</p>
+    <pre><code>
+//BASIC FULL DATASET QUERY, ADD TO END OF URL ENDPOINT => /query?where=1=1&outFields=*&outSR=4326&f=geojson
+https://gis.penndot.gov/arcgis/rest/services/opendata/parkandride/MapServer/0/query?where=1=1&outFields=*&outSR=4326&f=geojson
+//ONLY NEED 2 ATTRIBUTE FIELDS?
+https://gis.penndot.gov/arcgis/rest/services/opendata/parkandride/MapServer/0/query?where=1=1&outFields=CTY_CODE,DESCRIPTION&outSR=4326&f=geojson
+//LIMIT GEOMETRY COORDINATES TO 3 DECIMAL PLACES
+https://gis.penndot.gov/arcgis/rest/services/opendata/parkandride/MapServer/0/query?where=1=1&outFields=*&outSR=4326&geometryPrecision=3&f=geojson
+//INCLUDE A WHERE STATEMENT TO FILTER DATA
+https://gis.penndot.gov/arcgis/rest/services/opendata/parkandride/MapServer/0/query?where=CTY_CODE='02'&outFields=*&outSR=4326&f=geojson
+    </code></pre>
+    <p>Using Javascript, these query requests are done in an async manner and I like using the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API">fetch web API</a> for doing these async requests. I like to package the fetch async request inside a function so I can request the data when I need it by calling the function. My example function below takes 3 arguments and concatenates everything together for my request.</p>
+    <pre><code>
+function getGeoJsonData(dataUrlString,outFieldsArray,geoPrecisionInteger){
+    var fields = "*";
+    if (outFieldsArray.length > 0){
+        fields = outFieldsArray.join();
+    }
+    var query = "/query?where=1=1&outFields=" + fields + "&outSR=4326&geometryPrecision=" + geoPrecisionInteger + "&f=geojson";
+    fetch(dataUrlString + query)
+    .then(function(response){
+        return response.json();
+    })
+    .then(function(data){
+        //DO SOMETHING WITH DATA
+        console.log(data);
+    })
+    .catch(function(error){
+        //CATCH AN ERROR
+        console.log(error);
+    });
+}
+//THE REST ENDPOINT URL FOR THE DATA
+var url = "https://gis.penndot.gov/arcgis/rest/services/opendata/parkandride/MapServer/0";
+//AN ARRAY OF ATTRIBUTE FIELDS YOU WANT, IF YOU WANT ALL ATTRIBUTES PASS AN EMPTY ARRAY []
+var fields = ["EXIT_NAME","DESCRIPTION","CTY_CODE","HCP_SPACES"];
+//GEOMETRY PRECISION IS THE NUMBER OF DIGITS AFTER THE DECIMAL PLACE TYPICALLY 6 PROVIDES ENOUGH ACCURACY
+var geometryPrecision = 6;
+//CALL FUNCTION WHEN YOU WANT TO FETCH YOUR DATA
+getGeoJsonData(url,fields,geometryPrecision);
+    </code></pre>
+    <p>An example pulling data from PennDOT's Open Data portal of <a href="https://data-pennshare.opendata.arcgis.com/datasets/park-and-ride">Park and Ride Locations</a> and adds the geojson data to the map.</p>
+    <div id="map" class="full-width"></div>
+    <p>Now, let's do a classic point-in-polygon spatial query. Provide and XY coordinate pair and return the polygons it intersects. A great place to get started with REST API spatial queries is the <i>API Explorer</i> tab that you find on many open data portal pages. This example will query counties of Pennsylvania from PennDOT's Open Data Portal. In the code block below be sure to see the new query parameters that have been added. In this example, we are doing a spatial relationship of intersect with a point in lng,lat in decimal degrees (inSR 4326) with our REST endpoint layer.</p>
+    <pre><code>
+function getCounty(dataUrlString,lat,lng){
+    fetch(dataUrlString + "/query?where=1=1&outFields=COUNTY_NAME&geometry=" + lng + "," + lat + "&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outSR=4326&f=geojson")
+    .then(function(response){
+        return response.json();
+    })
+    .then(function(data){
+        //DO SOMETHING WITH DATA
+        console.log(data);
+    })
+    .catch(function(error){
+        console.log(error);
+    });
+}
+//URL TO REST ENDPOINT
+var url = "https://gis.penndot.gov/arcgis/rest/services/opendata/countyboundary/MapServer/0";
+//CALL FUNCTION
+getCounty(url, 40.439827, -79.999325);
+    </code></pre>
+    <p>Example of the function above. County is <b id="cty">N/A</b></p>
+    <div id="map-2" class="full-width"></div>
+    <p>So much can be done with the Esri REST API. These two examples just scratch the surface for geo-web developers. In my next post, I will show an editing example where you can <a href="https://developers.arcgis.com/rest/services-reference/add-features.htm">add features</a> to a layer by doing a POST request with the Fetch API.</p>
+</div>
+<footer><hr><p>&copy Stephen Cline</p></footer>
+<script src="../asset/script.js"></script>
+<script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet.js"></script>
+<script>
+var map = L.map("map",{scrollWheelZoom:false});
+map.fitBounds([[42.738943,-74.476318],[39.427707,-80.859375]]);
+L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",{attribution: "<a href='http://www.esri.com/'>esri</a>"}).addTo(map);
+
+
+function getGeoJsonData(dataUrlString,outFieldsArray,geoPrecisionInteger){
+    var fields = "*";
+    if (outFieldsArray.length > 0){
+        fields = outFieldsArray.join();
+    }
+    var query = "/query?where=1=1&outFields=" + fields + "&outSR=4326&geometryPrecision=" + geoPrecisionInteger + "&f=geojson";
+    fetch(dataUrlString + query)
+    .then(function(response){
+        return response.json();
+    })
+    .then(function(data){
+        L.geoJson(data,{
+            pointToLayer: function (feature, latlng) {
+                return L.circleMarker(latlng);
+            }
+        }).addTo(map);
+    })
+    .catch(function(error){
+        console.log(error);
+    });
+}
+//THE REST ENDPOINT URL FOR THE DATA
+var url = "https://gis.penndot.gov/arcgis/rest/services/opendata/parkandride/MapServer/0";
+//AN ARRAY OF ATTRIBUTE FIELDS YOU WANT, IF YOU WANT ALL ATTRIBUTES PASS AN EMPTY ARRAY []
+var fields = ["EXIT_NAME","DESCRIPTION","CTY_CODE","HCP_SPACES"];
+//GEOMETRY PRECISION IS THE NUMBER OF DIGITS AFTER THE DECIMAL PLACE TYPICALLY 6 PROVIDES ENOUGH ACCURACY
+var geometryPrecision = 6;
+getGeoJsonData(url,fields,geometryPrecision);
+
+var map2 = L.map("map-2",{scrollWheelZoom:false});
+map2.fitBounds([[42.738943,-74.476318],[39.427707,-80.859375]]);
+//map2.setView([40.439827,-79.999325], 17);
+L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",{attribution: "<a href='http://www.esri.com/'>esri</a>"}).addTo(map2);
+var marker = L.marker(map2.getCenter(), {draggable:true}).addTo(map2);
+var layerParcel = L.geoJson(null).addTo(map2);
+marker.on("dragend", function(){
+    var url = "https://gis.penndot.gov/arcgis/rest/services/opendata/countyboundary/MapServer/0";
+    getCounty(url,marker.getLatLng().lat,marker.getLatLng().lng);
+});
+marker.bindPopup("Drag & Drop Marker<br>to query a county",{closeButton:false}).openPopup();
+marker.on("popupclose", function(){
+    marker.unbindPopup();
+});
+
+function getCounty(dataUrlString,lat,lng){
+    var county = document.getElementById("cty");
+    county.innerText = "Searching...";
+    fetch(dataUrlString + "/query?where=1=1&outFields=COUNTY_NAME&geometry=" + lng + "," + lat + "&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outSR=4326&f=geojson")
+    .then(function(response){
+        return response.json();
+    })
+    .then(function(data){
+        layerParcel.clearLayers();
+        layerParcel.addData(data);
+        if (data.features.length === 0){
+            county.innerText = "Outside Pennsylvania";
+        }
+        else {
+            county.innerText = data.features[0].properties.COUNTY_NAME;
+        }
+    })
+    .catch(function(error){
+        console.log(error);
+    });
+}
+</script>
+
+
+</body>
+</html>
