@@ -159,7 +159,7 @@ var fields = ["EXIT_NAME","DESCRIPTION","CTY_CODE","HCP_SPACES"];
 var geometryPrecision = 6;
 getGeoJsonData(url,fields,geometryPrecision);
 
-var map2 = L.map("map-2",{scrollWheelZoom:false, dragging:false});
+var map2 = L.map("map-2",{scrollWheelZoom:false});
 map2.fitBounds([[41.9,-80.5],[39.79,-74.939]]);
 //map2.setView([40.439827,-79.999325], 17);
 L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",{attribution: "<a href='http://www.esri.com/'>esri</a>"}).addTo(map2);
