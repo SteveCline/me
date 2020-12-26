@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset=utf-8>
+<meta content="Stephen Cline" name=author>
+<meta content="width=device-width,minimum-scale=1" name=viewport>
+<title>The Chirp</title>
+<link rel="stylesheet" href="../asset/style.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<style>
+    #map {position: relative; height:350px;}
+    #start-map-loop {
+    	color: #000;
+    	background: goldenrod;
+    	border: 2px solid #000;
+    	padding: 4px;
+    	margin-bottom: 8px;
+    	font-size: 1.3em;
+    	cursor: pointer;
+    }
+    .map-icon {
+		background: goldenrod;
+		color: #000;
+		border: 2px solid rgb(30,30,30);
+		border-radius: 20px;
+		font-family: 'Open Sans', sans-serif;
+		font-weight: bold;
+    }
+	.map-icon p {
+		text-align: center;
+		margin-top: 2px;
+	}
+	.leaflet-popup-content-wrapper{
+		background-color:rgba(0,0,0,0.8);
+		border-radius: 2px;
+    }
+    .leaflet-popup-content{
+		color:#fff;
+		font-weight: bold;
+		text-align: center;
+    }
+	.leaflet-popup-tip{
+		background-color:rgba(0,0,0,0.8);
+	}
+</style>
+<link rel="icon" type="image/png" href="img/favicon.png" />
+</head>
+<body>
+<div id="menu-icon">
+	<div class="burger-line-1"></div>
+	<div class="burger-line-2"></div>
+	<div class="burger-line-3"></div>
+</div>
+<div id="menu" class="hide">
+	<a href="../index.html">About</a>
+	<a href="../projects.html">Projects</a>
+	<a href="../thechirp.html">The Chirp</a>
+</div>	
+<header>The Chirp<img class="bird-logo" src="../chirp/img/bird.svg"></header>	
+
+<div class="container">	
+	<h1>Paul Kuhn Cline</h1>
+	<p>12/26/2020</p>
+	<hr>
+	<p>I never got the chance to meet my grandfather. He died in September 1979 of a heart attack, nearly 4 years before my birth. I share a birthday with him, my parents gave me the middle name Paul in honor of this coincidence. In the internet age, little exists of his life and I thought it was time this 20th century man got introducted to the 21st century.</p>
+	<img class="full-width" src="img/blogpics/paul3.jpg">
+	<div class="photo-caption">About the best smile you will get from him. Paul with first grandchild Kira in the early 1970s.</div>
+	<p>My grandfather, Paul Kuhn Cline was born in May of 1907, surrounded by midwestern farm country in Shelby Ohio. Early in his life, his father purchased a farm 10 miles north of Shelby on the edge of the even smaller midwestern farm town of New Haven Ohio. The Cline farm and home sat on Klein Rd in New Haven. The road was named after our family but the history of the misspelling is unknown. In the 1920s as a teen boy, Paul Cline dropped out of school to work on the family farm. According to my father, it was likely not voluntary as my great grandfather needed the labor of the young Paul on the farm.</p>
+	<button id="start-map-loop" class="full-width">Start Map Tour</button>
+	<div id="map" class="full-width"></div>
+	<div class="photo-caption" style="margin-top:4px;">Mapping Paul Cline's notable places</div>
+	<p>Against his father's will, Paul Cline did not want to work for his father on the family farm. Early in his adulthood, Paul found a job working on the railroad in Willard just 4 miles up the road from the Cline farm in New Haven. He likly started working on the railroad in the late 20s or early 1930s. </p>
+	<img class="full-width" src="img/blogpics/paul5.jpg">
+	<div class="photo-caption">Paul and Rosalyn my grandparents</div>
+	<p>In 1935, when Paul was 28, he secretly married Rosalyn Catherine Barry. The couple eloped in Wheeling, West Virginia and did not tell anyone. My grandmother, Rosalyn, was a school teacher. We believe they eloped in secret so she could continue to work, because in those days married women were not allowed to work. The depression years were hard on the young couple and Paul would frequently get laid off from the railroad. In January of 1937, they had a public wedding and Rosalyn was forced out of her job that summer.</p>
+	<img class="full-width" src="img/blogpics/paul4.jpg">
+	<div class="photo-caption">Moving winter snow outside 506 Euclid St in Willard sometime in the 1960s</div>
+	<p>At some point Paul and Rosalyn purchased a home at 506 Euclid Street in Willard and this would become their family home. It was a modest yet somewhat idyllic midwestern home for them to raise a family in.  My aunt Lois was born in Feburary of 1941 during the early years of WWII and my father, Robert, was born just after the end of the war in September of 1945. The war years provided steady work on the railroad for Paul. The Willard station on the B&O Railroad was an important stop to feed the war in Europe.</p>
+	<img class="full-width" src="img/blogpics/paul1.jpg">
+	<div class="photo-caption">Paul with his two children Robert and Lois on vacation in Yellowstone National Park.</div>
+	<p>From all the photos I have seen, my grandfather Paul seems to be a classic man-of-his-times, grizzled and weathered from hard work on the railroad. He barely smiled in photos and he smoked as all men of his day did. He looks stoic and gruff in many pictures but I am told he had a warm heart. He never did graduate high school and never went to college unlike my grandmother Rosalyn who had a college degree. It is suspected this gap in education made my grandfather slightly resentful of the education my grandmother Rosalyn had.</p>
+	<img class="full-width" src="img/blogpics/paul6.jpg">
+	<div class="photo-caption">Paul had a softspot for the cat brought home by my dad</div>
+	<p>Paul and Rosalyn were very frugal people. Having spent their early adulthood in depression years of the 1930s, it taught them to live within their means. During the 1950s Paul picked up a second job as a Culligan water softener guy to bring home extra income when the railroad intermittently laid him off. With the shifting cultural times of the 50s, Rosalyn was able to return to work as a married women and began to teach again. This allowed the Cline family to be comfortably middle class in the 50s while raising my aunt and father.</p>
+	<img class="full-width" src="img/blogpics/paul7.jpg">
+	<div class="photo-caption">Family had saved enough money for a family vacation to Yellowstone National Park in the mid 1950s</div>
+	<p>When Lois and Robert moved on to college and their own lives by the mid 1960s, Paul and Rosalyn became empty nesters, but had saved enough to get their kids to college and visit their children. Paul turned 55 in 1962.</p>
+	<img class="full-width" src="img/blogpics/paul2.jpg">
+	<div class="photo-caption">Paul and college aged son Robert visiting Lois in New York in the 1960s</div>
+	<p>I don't know much about my grandfather's hobbies, I don't suspect he had many. Later in his life, he had heart issues which he did ultimalty die from in 1979 at the age of 73. My grandmother Rosalyn outlived him by many years and she lived into her 90s.</p>
+	<img class="full-width" src="img/blogpics/paul8.jpg">
+	<div class="photo-caption">Paul visits Washington DC, the guy had a great hat collection</div>
+	<p>Most of the photos of him come from trips he took later in life, but he spent the majority of his life around the Willard and New Haven area. He is buried with my grandmother in the New Haven Cemetery along with other family members.</p>
+</div>
+<footer><hr><p>&copy Stephen Cline</p></footer>
+<script src="../asset/script.js"></script>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script>
+var map = L.map("map", {scrollWheelZoom: false});
+L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",{attribution: "<a href='http://www.esri.com/'>esri</a>", detectRetina:true}).addTo(map);
+var data = {"type":"FeatureCollection","features":[{"type":"Feature","properties":{"num":1,"note":"Born May of 1907 in Shelby Ohio"},"geometry":{"type":"Point","coordinates":[-82.66181945800783,40.88143045385923]}},{"type":"Feature","properties":{"num":2,"note":"Cline Farm on Klein Rd"},"geometry":{"type":"Point","coordinates":[-82.66380429267885,41.03857801878814]}},{"type":"Feature","properties":{"num":3,"note":"506 Euclid Street in Willard"},"geometry":{"type":"Point","coordinates":[-82.73173391819,41.05294048671941]}},{"type":"Feature","properties":{"num":4,"note":"Worked assembling cars on the B&O Railroad"},"geometry":{"type":"Point","coordinates":[-82.751103,41.065225]}},{"type":"Feature","properties":{"num":5,"note":"Buried at the New Haven Cemetary"},"geometry":{"type":"Point","coordinates":[-82.68001556396486,41.02233453967485]}}]};
+var layer = L.geoJson(data,{
+	onEachFeature: function(feature,layer){
+		layer.bindPopup(feature.properties.note, {closeButton:false});
+	},
+	pointToLayer: function (feature, latlng) {
+		return L.marker(latlng, {
+			icon:L.divIcon({
+			html: "<p>" + feature.properties.num + "</p>",
+			className: "map-icon",
+			iconSize: [25,25],
+			popupAnchor: L.point(0,-13)
+			}),
+			riseOnHover: true
+			});
+	}
+}).addTo(map);
+map.fitBounds(layer.getBounds(), {padding:[50,50]});
+
+var counter = 0;
+function mapLoop(){
+	mapLoopButton.innerText = "Next Stop #" + (counter + 2);
+	var f = data.features[counter];
+	var lat = f.geometry.coordinates[1];
+	var lng = f.geometry.coordinates[0];
+	if(counter === 1){map.flyTo([lat,lng],15);}
+	else {map.flyTo([lat,lng],14);}
+	counter += 1;
+	layer.eachLayer(function(lyr){
+		if(lyr.feature.properties.num === counter){
+			lyr.openPopup();
+		}
+	});	
+	if (counter === 5){counter = 0;mapLoopButton.innerText = "Start Tour Over";}
+}
+var mapLoopButton = document.querySelector("#start-map-loop");
+mapLoopButton.addEventListener("click",mapLoop);
+
+map.on("zoomend",function(){
+
+});
+
+</script>
+
+
+</body>
+</html>
