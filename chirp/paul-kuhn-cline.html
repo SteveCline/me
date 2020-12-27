@@ -96,7 +96,7 @@
 <script src="../asset/script.js"></script>
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script>
-var map = L.map("map", {scrollWheelZoom: false, tap:false});
+var map = L.map("map", {scrollWheelZoom: false, tap:false, touchZoom: false});
 L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",{attribution: "<a href='http://www.esri.com/'>esri</a>", detectRetina:true}).addTo(map);
 var data = {"type":"FeatureCollection","features":[{"type":"Feature","properties":{"num":1,"note":"Born May of 1907 in Shelby Ohio"},"geometry":{"type":"Point","coordinates":[-82.66181945800783,40.88143045385923]}},{"type":"Feature","properties":{"num":2,"note":"Cline Farm on Klein Rd"},"geometry":{"type":"Point","coordinates":[-82.66380429267885,41.03857801878814]}},{"type":"Feature","properties":{"num":3,"note":"506 Euclid Street in Willard"},"geometry":{"type":"Point","coordinates":[-82.73173391819,41.05294048671941]}},{"type":"Feature","properties":{"num":4,"note":"Worked assembling cars on the B&O Railroad"},"geometry":{"type":"Point","coordinates":[-82.751103,41.065225]}},{"type":"Feature","properties":{"num":5,"note":"Buried at the New Haven Cemetary"},"geometry":{"type":"Point","coordinates":[-82.68001556396486,41.02233453967485]}}]};
 var layer = L.geoJson(data,{
