@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset=utf-8>
+<meta content="Stephen Cline" name=author>
+<meta content="width=device-width,minimum-scale=1" name=viewport>
+<title>The Chirp</title>
+<link rel="stylesheet" href="../asset/style.css" />
+<link rel="icon" type="image/png" href="img/favicon.png" />
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.js"></script>
+<style>
+.map { position: relative; height: 400px; width: 100%; }
+.map-comment-input {
+    padding: 4px;
+    margin-bottom: 8px;
+    box-sizing: border-box;
+    width: 100%;
+    border-radius: 0.2em;
+}
+.comment-button {
+    border: none;
+    font-size: 12px;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 0.2em;
+    padding: 6px 10px;
+}
+.point-icon {
+    background-repeat: no-repeat;
+    background-position: center;
+    pointer-events: auto;
+    background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+PHN2ZyAgIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgICB4bWxuczpjYz0iaHR0cDovL2NyZWF0aXZlY29tbW9ucy5vcmcvbnMjIiAgIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyIgICB4bWxuczpzdmc9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiAgIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgICB4bWxuczpzb2RpcG9kaT0iaHR0cDovL3NvZGlwb2RpLnNvdXJjZWZvcmdlLm5ldC9EVEQvc29kaXBvZGktMC5kdGQiICAgeG1sbnM6aW5rc2NhcGU9Imh0dHA6Ly93d3cuaW5rc2NhcGUub3JnL25hbWVzcGFjZXMvaW5rc2NhcGUiICAgd2lkdGg9IjIwIiAgIGhlaWdodD0iMjAiICAgdmlld0JveD0iMCAwIDIwIDIwIiAgIGlkPSJzdmcxOTE2NyIgICB2ZXJzaW9uPSIxLjEiICAgaW5rc2NhcGU6dmVyc2lvbj0iMC45MStkZXZlbCtvc3htZW51IHIxMjkxMSIgICBzb2RpcG9kaTpkb2NuYW1lPSJtYXJrZXIuc3ZnIj4gIDxkZWZzICAgICBpZD0iZGVmczE5MTY5IiAvPiAgPHNvZGlwb2RpOm5hbWVkdmlldyAgICAgaWQ9ImJhc2UiICAgICBwYWdlY29sb3I9IiNmZmZmZmYiICAgICBib3JkZXJjb2xvcj0iIzY2NjY2NiIgICAgIGJvcmRlcm9wYWNpdHk9IjEuMCIgICAgIGlua3NjYXBlOnBhZ2VvcGFjaXR5PSIwLjAiICAgICBpbmtzY2FwZTpwYWdlc2hhZG93PSIyIiAgICAgaW5rc2NhcGU6em9vbT0iMTYiICAgICBpbmtzY2FwZTpjeD0iMTQuMTY0MjUzIiAgICAgaW5rc2NhcGU6Y3k9IjguODg1NzIiICAgICBpbmtzY2FwZTpkb2N1bWVudC11bml0cz0icHgiICAgICBpbmtzY2FwZTpjdXJyZW50LWxheWVyPSJsYXllcjEiICAgICBzaG93Z3JpZD0iZmFsc2UiICAgICB1bml0cz0icHgiICAgICBpbmtzY2FwZTp3aW5kb3ctd2lkdGg9IjEyODAiICAgICBpbmtzY2FwZTp3aW5kb3ctaGVpZ2h0PSI3NTEiICAgICBpbmtzY2FwZTp3aW5kb3cteD0iMjA4IiAgICAgaW5rc2NhcGU6d2luZG93LXk9IjE5MCIgICAgIGlua3NjYXBlOndpbmRvdy1tYXhpbWl6ZWQ9IjAiICAgICBpbmtzY2FwZTpvYmplY3Qtbm9kZXM9InRydWUiPiAgICA8aW5rc2NhcGU6Z3JpZCAgICAgICB0eXBlPSJ4eWdyaWQiICAgICAgIGlkPSJncmlkMTk3MTUiIC8+ICA8L3NvZGlwb2RpOm5hbWVkdmlldz4gIDxtZXRhZGF0YSAgICAgaWQ9Im1ldGFkYXRhMTkxNzIiPiAgICA8cmRmOlJERj4gICAgICA8Y2M6V29yayAgICAgICAgIHJkZjphYm91dD0iIj4gICAgICAgIDxkYzpmb3JtYXQ+aW1hZ2Uvc3ZnK3htbDwvZGM6Zm9ybWF0PiAgICAgICAgPGRjOnR5cGUgICAgICAgICAgIHJkZjpyZXNvdXJjZT0iaHR0cDovL3B1cmwub3JnL2RjL2RjbWl0eXBlL1N0aWxsSW1hZ2UiIC8+ICAgICAgICA8ZGM6dGl0bGUgLz4gICAgICA8L2NjOldvcms+ICAgIDwvcmRmOlJERj4gIDwvbWV0YWRhdGE+ICA8ZyAgICAgaW5rc2NhcGU6bGFiZWw9IkxheWVyIDEiICAgICBpbmtzY2FwZTpncm91cG1vZGU9ImxheWVyIiAgICAgaWQ9ImxheWVyMSIgICAgIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAsLTEwMzIuMzYyMikiPiAgICA8cGF0aCAgICAgICBzdHlsZT0iY29sb3I6IzAwMDAwMDtjbGlwLXJ1bGU6bm9uemVybztkaXNwbGF5OmlubGluZTtvdmVyZmxvdzp2aXNpYmxlO3Zpc2liaWxpdHk6dmlzaWJsZTtvcGFjaXR5OjE7aXNvbGF0aW9uOmF1dG87bWl4LWJsZW5kLW1vZGU6bm9ybWFsO2NvbG9yLWludGVycG9sYXRpb246c1JHQjtjb2xvci1pbnRlcnBvbGF0aW9uLWZpbHRlcnM6bGluZWFyUkdCO3NvbGlkLWNvbG9yOiMwMDAwMDA7c29saWQtb3BhY2l0eToxO2ZpbGw6IzAwMDAwMDtmaWxsLW9wYWNpdHk6MTtmaWxsLXJ1bGU6ZXZlbm9kZDtzdHJva2U6bm9uZTtzdHJva2Utd2lkdGg6MjtzdHJva2UtbGluZWNhcDpyb3VuZDtzdHJva2UtbGluZWpvaW46cm91bmQ7c3Ryb2tlLW1pdGVybGltaXQ6NDtzdHJva2UtZGFzaGFycmF5Om5vbmU7c3Ryb2tlLWRhc2hvZmZzZXQ6MDtzdHJva2Utb3BhY2l0eToxO21hcmtlcjpub25lO2NvbG9yLXJlbmRlcmluZzphdXRvO2ltYWdlLXJlbmRlcmluZzphdXRvO3NoYXBlLXJlbmRlcmluZzphdXRvO3RleHQtcmVuZGVyaW5nOmF1dG87ZW5hYmxlLWJhY2tncm91bmQ6YWNjdW11bGF0ZSIgICAgICAgZD0ibSAzNiwxMDQwLjM2MjIgYyA2ZS02LDMuMzA5MyAtNS45ODg2MTIsMTAgLTUuOTg4NjEyLDEwIDAsMCAtNS45OTg3NzYsLTYuNjY4IC02LjAxMTM0NSwtOS45NzcyIC0wLjAxMjU3LC0zLjMwOTIgMi42NTY1NzYsLTYuMDAzOSA1Ljk2NTc5MiwtNi4wMjI3IDMuMzA5MTg5LC0wLjAxOSA2LjAwODg0LDIuNjQ1MiA2LjAzMzk5Miw1Ljk1NDMiICAgICAgIGlkPSJwYXRoMTI1NjEiICAgICAgIGlua3NjYXBlOmNvbm5lY3Rvci1jdXJ2YXR1cmU9IjAiICAgICAgIHNvZGlwb2RpOm5vZGV0eXBlcz0iY2Nzc2MiIC8+ICAgIDxwYXRoICAgICAgIHN0eWxlPSJjb2xvcjojMDAwMDAwO2NsaXAtcnVsZTpub256ZXJvO2Rpc3BsYXk6aW5saW5lO292ZXJmbG93OnZpc2libGU7dmlzaWJpbGl0eTp2aXNpYmxlO29wYWNpdHk6MTtpc29sYXRpb246YXV0bzttaXgtYmxlbmQtbW9kZTpub3JtYWw7Y29sb3ItaW50ZXJwb2xhdGlvbjpzUkdCO2NvbG9yLWludGVycG9sYXRpb24tZmlsdGVyczpsaW5lYXJSR0I7c29saWQtY29sb3I6IzAwMDAwMDtzb2xpZC1vcGFjaXR5OjE7ZmlsbDojZmZmZmZmO2ZpbGwtb3BhY2l0eToxO2ZpbGwtcnVsZTpldmVub2RkO3N0cm9rZTpub25lO3N0cm9rZS13aWR0aDoyO3N0cm9rZS1saW5lY2FwOnJvdW5kO3N0cm9rZS1saW5lam9pbjpyb3VuZDtzdHJva2UtbWl0ZXJsaW1pdDo0O3N0cm9rZS1kYXNoYXJyYXk6bm9uZTtzdHJva2UtZGFzaG9mZnNldDowO3N0cm9rZS1vcGFjaXR5OjE7bWFya2VyOm5vbmU7Y29sb3ItcmVuZGVyaW5nOmF1dG87aW1hZ2UtcmVuZGVyaW5nOmF1dG87c2hhcGUtcmVuZGVyaW5nOmF1dG87dGV4dC1yZW5kZXJpbmc6YXV0bztlbmFibGUtYmFja2dyb3VuZDphY2N1bXVsYXRlIiAgICAgICBkPSJtIDM0LjAwMDExNSwxMDQwLjM2MjIgYyAtNWUtNiwyLjIwNjIgLTMuOTkyNTIzLDcuMDAwMSAtMy45OTI1MjMsNy4wMDAxIDAsMCAtMy45OTkyOTEsLTQuNzc4NyAtNC4wMDc2NzksLTYuOTg0OSAtMC4wMDg0LC0yLjIwNjIgMS43NzEwODIsLTQuMDAyNyAzLjk3NzMxLC00LjAxNTMgMi4yMDYyMSwtMC4wMTMgNC4wMDYwMzcsMS43NjM1IDQuMDIyNzc3LDMuOTY5NyIgICAgICAgaWQ9InBhdGgxMjU2MyIgICAgICAgaW5rc2NhcGU6Y29ubmVjdG9yLWN1cnZhdHVyZT0iMCIgICAgICAgc29kaXBvZGk6bm9kZXR5cGVzPSJjY2NzYyIgLz4gICAgPHBhdGggICAgICAgc3R5bGU9ImNvbG9yOiMwMDAwMDA7Y2xpcC1ydWxlOm5vbnplcm87ZGlzcGxheTppbmxpbmU7b3ZlcmZsb3c6dmlzaWJsZTt2aXNpYmlsaXR5OnZpc2libGU7b3BhY2l0eToxO2lzb2xhdGlvbjphdXRvO21peC1ibGVuZC1tb2RlOm5vcm1hbDtjb2xvci1pbnRlcnBvbGF0aW9uOnNSR0I7Y29sb3ItaW50ZXJwb2xhdGlvbi1maWx0ZXJzOmxpbmVhclJHQjtzb2xpZC1jb2xvcjojMDAwMDAwO3NvbGlkLW9wYWNpdHk6MTtmaWxsOiMwMDAwMDA7ZmlsbC1vcGFjaXR5OjE7ZmlsbC1ydWxlOmV2ZW5vZGQ7c3Ryb2tlOm5vbmU7c3Ryb2tlLXdpZHRoOjI7c3Ryb2tlLWxpbmVjYXA6cm91bmQ7c3Ryb2tlLWxpbmVqb2luOnJvdW5kO3N0cm9rZS1taXRlcmxpbWl0OjQ7c3Ryb2tlLWRhc2hhcnJheTpub25lO3N0cm9rZS1kYXNob2Zmc2V0OjA7c3Ryb2tlLW9wYWNpdHk6MTttYXJrZXI6bm9uZTtjb2xvci1yZW5kZXJpbmc6YXV0bztpbWFnZS1yZW5kZXJpbmc6YXV0bztzaGFwZS1yZW5kZXJpbmc6YXV0bzt0ZXh0LXJlbmRlcmluZzphdXRvO2VuYWJsZS1iYWNrZ3JvdW5kOmFjY3VtdWxhdGUiICAgICAgIGQ9Ik0gOS45NjY3OTY5LDEwMTQuMzYyMiBDIDYuNjU3NTgwOSwxMDE0LjM4MSAzLjk4NzQzLDEwMTcuMDc2NCA0LDEwMjAuMzg1NiBjIDAuMDEyNTY5LDMuMzA5MiA2LjAxMTcxOSw4Ljk3NjYgNi4wMTE3MTksOC45NzY2IDAsMCA1Ljk4ODI4NywtNS42OTA3IDUuOTg4MjgxLC05IGwgMCwtMC4wNDUgYyAtMC4wMjUxNSwtMy4zMDkxIC0yLjcyNDAxNCwtNS45NzQxIC02LjAzMzIwMzEsLTUuOTU1MSB6IG0gMC4wMDk3NywyIGMgMi4yMDYyMDYxLC0wLjAxMyA0LjAwNjY5MzEsMS43NjI2IDQuMDIzNDMzMSwzLjk2ODggbCAwLDAuMDMxIGMgLTVlLTYsMi4yMDYyIC0zLjk5MjE4OCw2IC0zLjk5MjE4OCw2IDAsMCAtMy45OTk0MjQsLTMuNzc4MiAtNC4wMDc4MTIsLTUuOTg0NCAtMC4wMDg0LC0yLjIwNjIgMS43NzAzMzQ1LC00LjAwMyAzLjk3NjU2MjUsLTQuMDE1NiB6IiAgICAgICBpZD0icGF0aDEyNTY4IiAgICAgICBpbmtzY2FwZTpjb25uZWN0b3ItY3VydmF0dXJlPSIwIiAgICAgICBzb2RpcG9kaTpub2RldHlwZXM9ImNzY3NjY2Njc2NzYyIgLz4gICAgPHBhdGggICAgICAgc3R5bGU9Im9wYWNpdHk6MTtmaWxsOiMwMDAwMDA7ZmlsbC1vcGFjaXR5OjE7c3Ryb2tlOm5vbmU7c3Ryb2tlLXdpZHRoOjI7c3Ryb2tlLWxpbmVjYXA6YnV0dDtzdHJva2UtbGluZWpvaW46YmV2ZWw7c3Ryb2tlLW1pdGVybGltaXQ6NDtzdHJva2UtZGFzaGFycmF5Om5vbmU7c3Ryb2tlLWRhc2hvZmZzZXQ6MDtzdHJva2Utb3BhY2l0eToxO21hcmtlcjpub25lIiAgICAgICBkPSJNIDEwIDIgQyA2LjY4NjI5MiAyIDQgNC42ODYzIDQgOCBDIDQgMTEuMzEzNyAxMCAxNyAxMCAxNyBDIDEwIDE3IDE2IDExLjMxMzcgMTYgOCBDIDE2IDQuNjg2MyAxMy4zMTM3MDggMiAxMCAyIHogTSAxMCA0IEMgMTIuMDcxMDY4IDQgMTMuNzUgNS42Nzg5IDEzLjc1IDcuNzUgQyAxMy43NSA5LjIwNTMyNzggMTEuOTMxMTEgMTEuNjQ0MzkzIDEwLjgzMDA3OCAxMyBMIDkuMTY5OTIxOSAxMyBDIDguMDY4ODkwMyAxMS42NDQzOTMgNi4yNSA5LjIwNTMyNzggNi4yNSA3Ljc1IEMgNi4yNSA1LjY3ODkgNy45Mjg5MzIgNCAxMCA0IHogIiAgICAgICB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwLDEwMzIuMzYyMikiICAgICAgIGlkPSJwYXRoMTczMDUiIC8+ICA8L2c+PC9zdmc+);
+}
+.map-category-button {
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 0.2em;
+    padding: 8px 0;
+}
+.map-category-button:focus{
+    opacity: 1;
+    box-shadow: 0px 0px 0px 2px #000;
+}
+</style>
+</head>
+<body>
+<div id="menu-icon">
+	<div class="burger-line-1"></div>
+	<div class="burger-line-2"></div>
+	<div class="burger-line-3"></div>
+</div>
+<div id="menu" class="hide">
+	<a href="../index.html">About</a>
+	<a href="../projects.html">Projects</a>
+	<a href="../thechirp.html">The Chirp</a>
+</div>	
+<header>The Chirp<img class="bird-logo" src="../chirp/img/bird.svg"></header>	
+
+<div class="container">	
+	<h1>Comment Maps</h1>
+	<p>11/7/2022</p>
+	<hr>
+	<p>Since the post-pandemic world, the public involvement process in the transportation industry has been shaken up much like everything else. The days of in-person public meetings have been replaced with websites about the project and some type of survey to allow the public to voice concerns. Even when in-person meetings occur, the new expectation is to have an online option for those who can't make it. As someone who works in transportation, I am seeing the need for these surveys more and more.</p>
+	<p>While most of the survey questions are simple text inputs, select lists, and checkboxes, one common type of question keeps arising, we want to collect a location based comment (lat,lng coordinate) and a category to group the comment into. Cue, up the interactive map! While this seems pretty straight forward, there are a many user interface designs to solve this question. Most requirements should allow to add multiple location based comments, and allow the user to move, edit, and delete the comment. Commonly the UI/UX design ends up being pretty confusing for most people, especially those not familiar with interactive maps.</p>
+	<p>Over time, I quickly became obsessed with designing the best user-interface for this type of question and I ended up with these two examples. While there is certainly a better way, this is where I am at currently and I think it is worthwhile to share them. The big idea for these examples was to place the comment input within a pop-up to visually tie the comment to the location the user selected on the map.</p>
+	<h3>Example 1</h3>
+	<p style="font-style:italic;">Click <span class="point-icon" style="height:16px;width:18px;display:inline-block;"></span> then click the map to place your comments.</p>
+	<div id="map" class="map"></div>
+	<div class="photo-caption">No comments will be saved, feel free to test</div>
+	<p>The defining feature of Example 1 is that the category is in a select input within a pop-up on the point. The "add comment" button is placed within the map element. The user can add a point and choose to not add a text comment or select a category offering maximum flexibility. Constraints can be added to guide proper input as desired.</p>
+	<h3>Example 2</h3>
+	<p style="font-style:italic;">Select a category then click the map below to place your comments.</p>
+	<div style="display: grid;grid-template-columns: auto auto auto auto;grid-gap: 4px;margin-bottom: 8px;">
+		<button onClick="addCommentButtonClickEvent2(this)" value="Category 1" class="map-category-button" style="background:#d282ff;">Category 1</button>
+		<button onClick="addCommentButtonClickEvent2(this)" value="Category 2" class="map-category-button" style="background:#ffa113;">Category 2</button>
+		<button onClick="addCommentButtonClickEvent2(this)" value="Category 3" class="map-category-button" style="background:#38c874;">Category 3</button>
+		<button onClick="addCommentButtonClickEvent2(this)" value="Category 4" class="map-category-button" style="background:#6eb4f2;">Category 4</button>
+	</div>
+	<div id="map-2" class="map"></div>
+	<div class="photo-caption">No comments will be saved, feel free to test</div>
+	<p>The defining feature of Example 2 is that picking a category is required to place a point on the map. Color coding the category buttons to the map points doubles as a legend and helps visualize category choices. The pop-up becomes shorter without the select input in it. The downside is, the "add comment" control might be slightly less intuitive when not within the map element. This method adds more buttons adding visual clutter and takes up space which can make it more challenging on mobile.</p>
+	<p>While I am still in pursuit of the perfect comment map, these two maps are what I like currently from a UI/UX perspective. My goals are for comment maps to be intuitive, reduce clicks, and offer maximum editing and flexibility. If anyone has feedback or better ideas, I would love to know!</p>
+</div>
+<footer><hr><p>&copy Stephen Cline</p></footer>
+<script src="../asset/script.js"></script>
+<script>
+//MAP 1 CODE
+const map1 = new mapboxgl.Map({
+    container: "map",
+    zoom: 6,
+    center: [-77.55,40.9],
+    style: "mapbox://styles/mapbox/streets-v11",
+    accessToken: "pk.eyJ1IjoibWNjb3JtaWNrdGF5bG9yIiwiYSI6IkV1VTYyVXMifQ.zCU42TqxaSpRJvmH4Q094A"
+});
+
+let data = {"type": "FeatureCollection","features": []};
+let globalCommentId = undefined;
+let count = 0;
+
+map1.on("load", () => {
+    map1.addSource("source-comments", {
+        "type": "geojson",
+        "data": data
+    });
+    map1.addLayer({
+        "id": "layer-comments",
+        "type": "circle",
+        "source": "source-comments",
+        "paint": {
+            "circle-color": "#fff",
+            "circle-radius": 10,
+            "circle-stroke-width": 2,
+            "circle-stroke-color": "#000"
+        }
+    });
+    map1.addLayer({
+        "id": "layer-comments-label",
+        "type": "symbol",
+        "source": "source-comments",
+        "layout": {
+            "text-field": ["get", "num"],
+            "text-size": 14,
+            "text-anchor": "center",
+            "text-allow-overlap": true,
+        },
+        "paint": {
+            "text-color": "#000",
+        }
+    });
+});
+
+const popup = new mapboxgl.Popup({closeOnClick:false,closeButton: false,offset:10,maxWidth:"300px"});
+
+function createPop(id){
+    const f = data.features.find(obj => {return obj.properties.id === id;});
+    const select = '<label for="map-comment-select">Category</label><br><select id="map-comment-select-' + id + '" class="map-comment-input"><option value="none" disabled>--Select Category--</option><option value="Category 1">Category 1</option><option value="Category 2">Category 2</option><option value="Category 3">Category 3</option><option value="Category 4">Category 4</option></select>';
+    const buttons = "<div style='text-align:center;'><button id='map-comment-save-" + id + "' class='comment-button' style='background:#2ecc71;margin-right:10px;'>Save</button><button id='map-comment-delete-" + id + "' class='comment-button' style='background:#e74c3c;'>Delete</button></div>";
+    const help = "<small><mark>Help: Click point to open popup & edit. Drag point to move.</mark></small>";
+    const input = "<label>Comment</label><br><input type='text' class='map-comment-input' id='map-comment-input-" + id + "' value='" + f.properties.comment + "' placeholder='Enter comment here...' autocomplete='off' maxlength='250'>";
+    return input + select + buttons + help;
+}
+function addPopListeners(id){
+    const f = data.features.find(obj => {return obj.properties.id === id;});
+    const select = document.getElementById("map-comment-select-" + id);
+    select.value = f.properties.category;
+    const input = document.getElementById("map-comment-input-" + id);
+    const saveButton = document.getElementById("map-comment-save-" + id);
+    saveButton.addEventListener("click",function(){
+        f.properties.comment = input.value.trim();
+        f.properties.category = select.value;
+        createNumber(data);
+        popup.remove();
+    });
+    input.addEventListener("keydown", function(e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            saveButton.click();
+        }
+    });
+    const deleteButton = document.getElementById("map-comment-delete-" + id);
+    deleteButton.addEventListener("click",function(){
+        const index = data.features.findIndex(obj => {return obj.properties.id === id;});
+        data.features.splice(index,1);
+        createNumber(data);
+        popup.remove();
+    });
+}
+map1.on("mouseenter", "layer-comments", () => {
+    map1.getCanvas().style.cursor = "pointer";
+});
+
+map1.on("mouseleave", "layer-comments", () => {
+    map1.getCanvas().style.cursor = "";
+});
+
+map1.on("click", "layer-comments", (e) => {
+    e.preventDefault();
+    currentFeatureId = e.features[0].properties.id;
+    const c = e.features[0].geometry.coordinates.slice();
+    popup.setLngLat(c).setHTML(createPop(currentFeatureId)).addTo(map1);
+    addPopListeners(currentFeatureId);
+});
+
+map1.on("mousedown", "layer-comments", (e) => {
+    mouseAndTouch(e);
+    map1.getCanvas().style.cursor = "grab";
+    map1.on("mousemove", onMove);
+    map1.once("mouseup", onUp);
+});
+
+map1.on("touchstart", "layer-comments", function(e) {
+    if (e.points.length !== 1) return;
+    mouseAndTouch(e);
+    map1.on("touchmove", onMove);
+    map1.once("touchend", onUp);
+});
+map1.on("mouseover", "layer-comments", function(e) {
+    map1.off("click", addCommentMapClick);
+});
+
+function mouseAndTouch(e){
+    e.preventDefault();
+    retainComment(globalCommentId);
+    currentFeatureId = e.features[0].properties.id;
+    globalCommentId = currentFeatureId;
+    popup.remove();
+}
+
+function onMove(e) {
+    map1.getCanvas().style.cursor = "grabbing";
+    const f = data.features.find(obj => {return obj.properties.id === currentFeatureId;});
+    f.geometry.coordinates = [e.lngLat.lng, e.lngLat.lat];
+    map1.getSource("source-comments").setData(data);
+}
+
+function onUp(e) {
+    map1.getCanvas().style.cursor = "";
+    map1.off("mousemove", onMove);
+    map1.off("touchmove", onMove);
+}
+
+function retainComment(id){
+    if (popup.isOpen() && id){
+        const f = data.features.find(obj => {return obj.properties.id === id;});
+        const input = document.getElementById("map-comment-input-" + id);
+        const select = document.getElementById("map-comment-select-" + id);
+        f.properties.comment = input.value;
+        f.properties.category = select.value;
+		createNumber(data);
+    }
+}
+
+function addCommentButtonClickEvent(){
+    map1.getCanvas().style.cursor = "crosshair";
+    retainComment(globalCommentId);
+    popup.remove();
+    map1.once("click",addCommentMapClick);
+}
+
+function addCommentMapClick(e){
+    count = count + 1;
+    const feature = {
+        "type": "Feature",
+        "properties": {"id":count,"category":"none","comment":"","num":""},
+        "geometry": {"type": "Point","coordinates": [e.lngLat.lng,e.lngLat.lat]}
+    };
+    data.features.push(feature);
+    map1.getSource("source-comments").setData(data);
+    map1.getCanvas().style.cursor = "pointer";
+    popup.setLngLat([e.lngLat.lng,e.lngLat.lat]).setHTML(createPop(feature.properties.id)).addTo(map1);
+    addPopListeners(feature.properties.id);
+    globalCommentId = feature.properties.id;
+}
+
+function createNumber(geojson){
+    geojson.features.forEach(function(item,index){
+        item.properties.num = index + 1;
+    });
+    map1.getSource("source-comments").setData(data);
+}
+
+//COMMENT CONTROL BUTTON CLASS
+class AddCommentControl {
+  onAdd(map) {
+    this._map = map;
+    this._btn = document.createElement("button");
+    this._btn.className = "mapboxgl-ctrl-icon point-icon";
+    this._btn.title = "Add Comment";
+    this._btn.type = "button";
+    this._btn["aria-label"] = "Add Comment";
+    this._btn.onclick = addCommentButtonClickEvent;
+    this._container = document.createElement("div");
+    this._container.className = "mapboxgl-ctrl-group mapboxgl-ctrl";
+    this._container.appendChild(this._btn);
+    return this._container;
+  }
+  onRemove() {
+    this._container.parentNode.removeChild(this._container);
+    this._map = undefined;
+  }
+}
+map1.addControl(new AddCommentControl(), "top-left");
+
+//MAP 2 CODE
+const map2 = new mapboxgl.Map({
+    container: "map-2",
+    zoom: 6,
+    center: [-77.55,40.9],
+    style: "mapbox://styles/mapbox/streets-v11",
+    accessToken: "pk.eyJ1IjoibWNjb3JtaWNrdGF5bG9yIiwiYSI6IkV1VTYyVXMifQ.zCU42TqxaSpRJvmH4Q094A"
+});
+
+let data2 = {"type": "FeatureCollection","features": []};
+let globalCommentCategory2 = undefined;
+let globalCommentId2 = undefined;
+let count2 = 0;
+
+map2.on("load", () => {
+    map2.addSource("source-comments", {
+        "type": "geojson",
+        "data": data2
+    });
+    map2.addLayer({
+        "id": "layer-comments",
+        "type": "circle",
+        "source": "source-comments",
+		"paint": {
+            "circle-color": ["match",["get", "category"],["Category 1"],"#d282ff",["Category 2"],"#ffa113",["Category 3"],"#38c874",["Category 4"],"#6eb4f2","#ccc"],
+            "circle-radius": 10,
+            "circle-stroke-width": 2,
+            "circle-stroke-color": "#000"
+        }
+    });
+    map2.addLayer({
+        "id": "layer-comments-label",
+        "type": "symbol",
+        "source": "source-comments",
+        "layout": {
+            "text-field": ["get", "num"],
+            "text-size": 14,
+            "text-anchor": "center",
+            "text-allow-overlap": true,
+        },
+        "paint": {
+            "text-color": "#000",
+        }
+    });
+});
+
+const popup2 = new mapboxgl.Popup({closeOnClick:false,closeButton: false,offset:12,maxWidth:"300px"});
+
+function createPop2(id){
+    const f = data2.features.find(obj => {return obj.properties.id === id;});
+    const buttons = "<div style='text-align:center;'><button id='map2-comment-save-" + id + "' class='comment-button' style='background:#2ecc71;margin-right:10px;'>Save</button><button id='map2-comment-delete-" + id + "' class='comment-button' style='background:#e74c3c;'>Delete</button></div>";
+    const help = "<small><mark>Help: Click point to open popup & edit. Drag point to move.</mark></small>";
+    const input = "<label>Comment</label><br><input type='text' class='map-comment-input' id='map2-comment-input-" + id + "' value='" + f.properties.comment + "' placeholder='Enter comment here...' autocomplete='off' maxlength='250'>";
+    return input + buttons + help;
+}
+function addPopListeners2(id){
+    const f = data2.features.find(obj => {return obj.properties.id === id;});
+    const input = document.getElementById("map2-comment-input-" + id);
+    const saveButton = document.getElementById("map2-comment-save-" + id);
+    saveButton.addEventListener("click",function(){
+        f.properties.comment = input.value.trim();
+        popup2.remove();
+    });
+    input.addEventListener("keydown", function(e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            saveButton.click();
+        }
+    });
+    const deleteButton = document.getElementById("map2-comment-delete-" + id);
+    deleteButton.addEventListener("click",function(){
+        const index = data2.features.findIndex(obj => {return obj.properties.id === id;});
+        data2.features.splice(index,1);
+        updateCommentNumber(data2);
+        map2.getSource("source-comments").setData(data2);
+        popup2.remove();
+    });
+}
+
+map2.on("mouseenter", "layer-comments", () => {
+    map2.getCanvas().style.cursor = "pointer";
+});
+
+map2.on("mouseleave", "layer-comments", () => {
+    map2.getCanvas().style.cursor = "";
+});
+
+map2.on("click", "layer-comments", (e) => {
+    e.preventDefault();
+    currentFeatureId = e.features[0].properties.id;
+    const c = e.features[0].geometry.coordinates.slice();
+    popup2.setLngLat(c).setHTML(createPop2(currentFeatureId)).addTo(map2);
+    addPopListeners2(currentFeatureId);
+});
+
+map2.on("mousedown", "layer-comments", (e) => {
+    mouseAndTouch2(e);
+    map2.getCanvas().style.cursor = "grab";
+    map2.on("mousemove", onMove2);
+    map2.once("mouseup", onUp2);
+});
+
+map2.on("touchstart", "layer-comments", (e) => {
+    if (e.points.length !== 1) return;
+    mouseAndTouch2(e);
+    map2.on("touchmove", onMove2);
+    map2.once("touchend", onUp2);
+});
+map2.on("mouseover", "layer-comments", (e) => {
+    map2.off("click", addCommentMapClick2);
+    const categoryButtons = document.querySelectorAll(".map-category-button");
+    categoryButtons.forEach(i => i.blur());
+});
+
+function mouseAndTouch2(e){
+    e.preventDefault();
+    retainComment2(globalCommentId2);
+    currentFeatureId = e.features[0].properties.id;
+    globalCommentId2 = currentFeatureId;
+    popup2.remove();
+}
+
+function onMove2(e) {
+    map2.getCanvas().style.cursor = "grabbing";
+    const f = data2.features.find(obj => {return obj.properties.id === currentFeatureId;});
+    f.geometry.coordinates = [e.lngLat.lng, e.lngLat.lat];
+    map2.getSource("source-comments").setData(data2);
+}
+
+function onUp2(e) {
+    map2.getCanvas().style.cursor = "";
+    map2.off("mousemove", onMove2);
+    map2.off("touchmove", onMove2);
+}
+
+function retainComment2(id){
+    if (popup2.isOpen() && id){
+        const f = data2.features.find(obj => {return obj.properties.id === id;});
+        const input = document.getElementById("map2-comment-input-" + id);
+        f.properties.comment = input.value;
+    }
+}
+
+function addCommentButtonClickEvent2(btn){
+    globalCommentCategory2 = btn.value;
+    map2.getCanvas().style.cursor = "crosshair";
+    retainComment2(globalCommentId2);
+    popup2.remove();
+    map2.once("click",addCommentMapClick2);
+}
+
+function addCommentMapClick2(e){
+    count2 = count2 + 1;
+    const feature = {
+        "type": "Feature",
+        "properties": {"id":count2,"category":globalCommentCategory2,"comment":"","num":""},
+        "geometry": {"type": "Point","coordinates": [e.lngLat.lng,e.lngLat.lat]}
+    };
+    data2.features.push(feature);
+    updateCommentNumber(data2);
+    map2.getSource("source-comments").setData(data2);
+    map2.getCanvas().style.cursor = "pointer";
+    popup2.setLngLat([e.lngLat.lng,e.lngLat.lat]).setHTML(createPop2(feature.properties.id)).addTo(map2);
+    addPopListeners2(feature.properties.id);
+    globalCommentId2 = feature.properties.id;
+}
+
+function updateCommentNumber(geojson){
+    geojson.features.forEach(function(item,index){
+        item.properties.num = index + 1;
+    });  
+}
+
+</script>
+</body>
+</html>
