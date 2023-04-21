@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset=utf-8>
+<meta content="Stephen Cline" name=author>
+<meta content="width=device-width,minimum-scale=1" name=viewport>
+<title>The Chirp</title>
+<link rel="stylesheet" href="../asset/style.css" />
+<link rel="icon" type="image/png" href="img/favicon.png" />
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.js"></script>
+<style>
+    .map { position: relative; height: 350px; width: 100%; }
+    #table-pho {
+        border-collapse: collapse;
+        margin-top: 16px;
+        font-family: sans-serif;
+        font-size: 0.9em;
+        width: 100%;
+    }
+
+    #table-pho td, #table-pho th {
+        border: 1px solid #000;
+        padding: 8px;
+    }
+    .select {
+        cursor: pointer;
+    }
+    #table-pho tr:nth-child(even){background-color: #ddd;}
+
+    #table-pho th {
+        text-align: left;
+        background-color: #38f;
+        color: #fff;
+    }
+    .active {
+        background-color: rgba(51, 136, 255,0.4) !important;
+    }
+    .mapboxgl-popup-content {
+        background: #38f;
+        border: 2px solid #fff;
+        color: #fff;
+    }
+</style>
+</head>
+<body>
+<div id="menu-icon">
+	<div class="burger-line-1"></div>
+	<div class="burger-line-2"></div>
+	<div class="burger-line-3"></div>
+</div>
+<div id="menu" class="hide">
+	<a href="../index.html">About</a>
+	<a href="../projects.html">Projects</a>
+	<a href="../thechirp.html">The Chirp</a>
+</div>	
+<header>The Chirp<img class="bird-logo" src="../chirp/img/bird.svg"></header>	
+
+<div class="container">	
+	<h1>A Soup Called Pho</h1>
+	<p>4/20/2023</p>
+	<hr>
+	<p>Steve and Drew love pho soup. You probably do too. It is everywhere these days. You too must be wondering. What's the best Vietnamese beef noodle soup in Vancouver? Great question. Leave it up to this dynamic duo to solve the caper, for Steve is the Pho King and Drew is his trusty soup companion who has a keen interest in banh mi sandwiches.</p>
+	<p>Follow along here for scoring, pho reviews and misadventures, so that we may crown the best Pho in the Couve! Gimme dat P3! 🍜</p>
+    <h3>Vancouver Pho Fun</h3>
+	<div id="map" class="map"></div>
+    <div class="photo-caption">Click each map point for the review at bottom</div>
+    <div style="overflow-x: auto;">
+        <table id="table-pho">
+            <tr>
+                <th>Restaurant</th>
+                <th>Visit</th>
+                <th>Value</th>
+                <th>Taste</th>
+                <th>Fresh</th>
+                <th>Sides</th>
+                <th>Total</th>
+            </tr>
+        </table>
+    </div>
+    <div class="photo-caption">Click each row for the review at bottom</div>
+    <div id="div-review"></div>
+</div>
+<footer><hr><p>&copy Stephen Cline</p></footer>
+<script src="../asset/script.js"></script>
+<script>
+const data = {"type": "FeatureCollection","features": [
+    {
+        "type": "Feature",
+        "geometry": {"type": "Point","coordinates": [-122.505622,45.622396]},
+        "properties": {
+            "id": 1,
+            "name": "Pho 777",
+            "address": "212 NE 164th Ave<br>Vancouver, WA 98684",
+            "date": "12/1/2022",
+            "value": 6,
+            "taste": 8,
+            "fresh": 8,
+            "sides": 7,
+            "review": "Zesty Broth, with a decent bowl size. Thin cut jalapeno, fresh basil and plenty of sides to fill your bowl."
+        }
+    },
+    {
+        "type": "Feature",
+        "geometry": {"type": "Point","coordinates": [-122.639518,45.638849]},
+        "properties": {
+            "id": 2,
+            "name": "Pho Hong Phat",
+            "address": "2904 E 4th Plain Blvd<br>Vancouver, WA 986611",
+            "date": "1/12/2023",
+            "value": 8,
+            "taste": 7,
+            "fresh": 7,
+            "sides": 7,
+            "review": "Salty broth with a generous amount of meat. Thick cut jalapeno. Sides include cilantro, but light on the basil."
+        }
+    },
+    {
+        "type": "Feature",
+        "geometry": {"type": "Point","coordinates": [-122.546037,45.619367]},
+        "properties": {
+            "id": 3,
+            "name": "Pho House Cafe",
+            "address": "316 SE 123rd Ave Unit A3<br>Vancouver, WA 98683",
+            "date": "2/16/2023",
+            "value": 5,
+            "taste": 6,
+            "fresh": 8,
+            "sides": 7,
+            "review": "Nice aromatics, but broth is light on saltyness and less zestyness. Lots of basil, light on meat. Standard fresh sides."
+        }
+    },
+    {
+        "type": "Feature",
+        "geometry": {"type": "Point","coordinates": [-122.555550,45.617175]},
+        "properties": {
+            "id": 4,
+            "name": "Pho Family",
+            "address": "516 SE Chkalov Dr #33<br>Vancouver, WA 98683",
+            "date": "4/6/2023",
+            "value": 7,
+            "taste": 8,
+            "fresh": 8,
+            "sides": 9,
+            "review": "Decent bowls sizes, classic pho broth, plenty of onion. Could be more meat. Lots of sides, including greens, no cilantro."
+        }
+    },
+    {
+        "type": "Feature",
+        "geometry": {"type": "Point","coordinates": [-122.567782,45.622005]},
+        "properties": {
+            "id": null,
+            "name": "Pho Star",
+            "address": "10204 SE Mill Plain Blvd<br>Vancouver, WA 98664",
+            "date": "",
+            "value": 0,
+            "taste": 0,
+            "fresh": 0,
+            "sides": 0,
+            "review": ""
+        }
+    },
+    {
+        "type": "Feature",
+        "geometry": {"type": "Point","coordinates": [-122.610280,45.643549]},
+        "properties": {
+            "id": null,
+            "name": "Phở Tôn",
+            "address": "6000 E 4th Plain Blvd<br>Vancouver, WA 98661",
+            "date": "",
+            "value": 0,
+            "taste": 0,
+            "fresh": 0,
+            "sides": 0,
+            "review": ""
+        }
+    },
+    {
+        "type": "Feature",
+        "geometry": {"type": "Point","coordinates": [-122.671865,45.637424]},
+        "properties": {
+            "id": null,
+            "name": "Phở Divine",
+            "address": "2014 Main St<br>Vancouver, WA 98660",
+            "date": "",
+            "value": 0,
+            "taste": 0,
+            "fresh": 0,
+            "sides": 0,
+            "review": ""
+        }
+    },
+    {
+        "type": "Feature",
+        "geometry": {"type": "Point","coordinates": [-122.598683,45.644665]},
+        "properties": {
+            "id": null,
+            "name": "Saigon Restaurant",
+            "address": "3021 NE 72nd Ave<br>Vancouver, WA 98661",
+            "date": "",
+            "value": 0,
+            "taste": 0,
+            "fresh": 0,
+            "sides": 0,
+            "review": ""
+        }
+    },
+    {
+        "type": "Feature",
+        "geometry": {"type": "Point","coordinates": [-122.657063,45.693911]},
+        "properties": {
+            "id": null,
+            "name": "UnPHOgettable",
+            "address": "9900 NE Highway 99th St<br>Vancouver, WA 98665",
+            "date": "",
+            "value": 0,
+            "taste": 0,
+            "fresh": 0,
+            "sides": 0,
+            "review": ""
+        }
+    },
+    {
+        "type": "Feature",
+        "geometry": {"type": "Point","coordinates": [-122.660434,45.684713]},
+        "properties": {
+            "id": null,
+            "name": "Lotus Vietnamese Cuisine",
+            "address": "8513 NE Hwy 99<br>Vancouver, WA 98665",
+            "date": "",
+            "value": 0,
+            "taste": 0,
+            "fresh": 0,
+            "sides": 0,
+            "review": ""
+        }
+    },
+    {
+        "type": "Feature",
+        "geometry": {"type": "Point","coordinates": [-122.666864,45.687530]},
+        "properties": {
+            "id": null,
+            "name": "Pho Brothers WA",
+            "address": "8902 NE 5th Ave #113<br>Vancouver, WA 98665",
+            "date": "",
+            "value": 0,
+            "taste": 0,
+            "fresh": 0,
+            "sides": 0,
+            "review": ""
+        }
+    },
+    {
+        "type": "Feature",
+        "geometry": {"type": "Point","coordinates": [-122.549282,45.669721]},
+        "properties": {
+            "id": null,
+            "name": "Ruby Pho & Deli",
+            "address": "12004 NE Fourth Plain Blvd<br>Vancouver, WA 98682",
+            "date": "",
+            "value": 0,
+            "taste": 0,
+            "fresh": 0,
+            "sides": 0,
+            "review": ""
+        }
+    },
+    {
+        "type": "Feature",
+        "geometry": {"type": "Point","coordinates": [-122.565352,45.663746]},
+        "properties": {
+            "id": null,
+            "name": "Pho Saigon",
+            "address": "10411 NE Fourth Plain Blvd #106<br>Vancouver, WA 98662",
+            "date": "",
+            "value": 0,
+            "taste": 0,
+            "fresh": 0,
+            "sides": 0,
+            "review": ""
+        }
+    },
+    {
+        "type": "Feature",
+        "geometry": {"type": "Point","coordinates": [-122.536124,45.618591]},
+        "properties": {
+            "id": null,
+            "name": "Pho Green Papaya",
+            "address": "13215 SE Mill Plain Blvd Ste C2<br>Vancouver, WA 98684",
+            "date": "",
+            "value": 0,
+            "taste": 0,
+            "fresh": 0,
+            "sides": 0,
+            "review": ""
+        }
+    },
+    {
+        "type": "Feature",
+        "geometry": {"type": "Point","coordinates": [-122.526171,45.618411]},
+        "properties": {
+            "id": null,
+            "name": "Cloud 9",
+            "address": "14201 SE Mill Plain Blvd<br>Vancouver, WA 98684",
+            "date": "",
+            "value": 0,
+            "taste": 0,
+            "fresh": 0,
+            "sides": 0,
+            "review": ""
+        }
+    },
+    {
+        "type": "Feature",
+        "geometry": {"type": "Point","coordinates": [-122.506729,45.605768]},
+        "properties": {
+            "id": null,
+            "name": "Phở Lê",
+            "address": "2100 SE 164th Ave Suite D-109<br>Vancouver, WA 98683",
+            "date": "",
+            "value": 0,
+            "taste": 0,
+            "fresh": 0,
+            "sides": 0,
+            "review": ""
+        }
+    },
+    {
+        "type": "Feature",
+        "geometry": {"type": "Point","coordinates": [-122.505070,45.603983]},
+        "properties": {
+            "id": null,
+            "name": "Pho Vi Van",
+            "address": "16209 SE McGillivray Blvd<br>Vancouver, WA 98683",
+            "date": "",
+            "value": 0,
+            "taste": 0,
+            "fresh": 0,
+            "sides": 0,
+            "review": ""
+        }
+    },
+]};
+
+const map = new mapboxgl.Map({
+    container: "map",
+    bounds: [[-122.440540,45.714934],[-122.75351,45.57819]],
+    style: "mapbox://styles/mapbox/streets-v11",
+    accessToken: "pk.eyJ1IjoibWNjb3JtaWNrdGF5bG9yIiwiYSI6IkV1VTYyVXMifQ.zCU42TqxaSpRJvmH4Q094A"
+});
+
+map.on("load", () => {
+    map.addSource("source-pho-restaurants", {
+        "type": "geojson",
+        "data": data
+    });
+    map.addLayer({
+        "id": "layer-pho-restaurants",
+        "type": "circle",
+        "source": "source-pho-restaurants",
+        "paint": {
+            "circle-color": "#38f",
+            "circle-radius": 8,
+            "circle-stroke-width": 1,
+            "circle-stroke-color": "#000"
+        }
+    });
+    map.addLayer({
+        "id": "layer-pho-restaurants-label",
+        "type": "symbol",
+        "source": "source-pho-restaurants",
+        "layout": {
+            "text-field": ["get", "id"],
+            "text-size": 12,
+            "text-anchor": "center",
+            "text-allow-overlap": true,
+        },
+        "paint": {
+            "text-color": "#000",
+        }
+    });
+});
+
+const popup = new mapboxgl.Popup({closeButton: false, offset: 9});
+
+map.on("mouseenter", "layer-pho-restaurants", () => {
+    map.getCanvas().style.cursor = "pointer";
+});
+
+map.on("mouseleave", "layer-pho-restaurants", () => {
+    map.getCanvas().style.cursor = "";
+});
+
+map.on("click", (e) => {
+    clearActiveTableRow();
+});
+
+map.on("click", "layer-pho-restaurants", (e) => {
+    e.preventDefault();
+    const p = e.features[0].properties;
+    const c = e.features[0].geometry.coordinates;
+    popup.setLngLat(c).setHTML(p.name + "<br>" + p.address).addTo(map);
+    clearActiveTableRow();
+    setActiveTableRow(e.features[0].properties);
+    addReview(e.features[0].properties);
+});
+
+function setActiveTableRow(props){
+    const rows = document.querySelectorAll(".select");
+    rows.forEach(e => {
+        const f = Number(e.firstElementChild.innerText.charAt(0));
+        if (f === props.id){
+            e.classList.add("active");
+        }
+    });
+}
+
+function clearActiveTableRow(){
+    const rows = document.querySelectorAll(".select");
+    rows.forEach(e => {e.classList.remove("active");});
+    const divReview = document.querySelector("#div-review");
+    divReview.innerHTML = "";
+}
+    
+function createTable(data){
+    const table = document.querySelector("#table-pho");
+    data.forEach(e => {
+        if (e.properties.id){
+            const row = document.createElement("tr");
+            row.classList.add("select");
+            const total = e.properties.value + e.properties.taste + e.properties.fresh + e.properties.sides;
+            const a = [e.properties.id + ". " + e.properties.name,e.properties.date,e.properties.value,e.properties.taste,e.properties.fresh,e.properties.sides, total];
+            a.forEach(e => {
+                const td = document.createElement("td");
+                td.innerText = e;
+                row.append(td);
+            });
+            row.addEventListener("click", function(){
+                clearActiveTableRow();
+                addReview(e.properties);
+                map.flyTo({
+                    center: e.geometry.coordinates,
+                    zoom: 13,
+                    speed: 0.8,
+                    essential: true
+                });
+                popup.setLngLat(e.geometry.coordinates).setHTML(e.properties.name + "<br>" + e.properties.address).addTo(map);
+                row.classList.add("active");
+            });
+            table.append(row);
+        }
+        else {
+            const row = document.createElement("tr");
+            const a = [e.properties.name,"-","-","-","-","-","-"];
+            a.forEach(e => {
+                const td = document.createElement("td");
+                td.innerText = e;
+                row.append(td);
+            });
+            table.append(row);
+        }
+    });
+}
+
+function addReview(props){
+    const div = document.querySelector("#div-review");
+    div.innerHTML = "";
+    if (props.id){
+        const title = document.createElement("h3");
+        title.innerText = props.id + ". " + props.name + " Review";
+        const review = document.createElement("p");
+        review.innerText = props.review;
+        const img = document.createElement("img");
+        img.src = "img/blogpics/pho" + props.id + ".jpg";
+        img.style.width = "100%";
+        const score = document.createElement("p");
+        const totalScore = props.value + props.taste + props.fresh + props.sides;
+        score.innerText = "🍜 Score: " + totalScore + "/40 or " + ((totalScore / 40) * 5).toFixed(2) + " out of 5 ⭐";
+        div.append(title,review,img,score);
+    }
+}
+
+createTable(data.features);
+
+
+
+
+
+
+
+</script>
+</body>
+</html>
