@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset=utf-8>
+<meta content="Stephen Cline" name=author>
+<meta content="width=device-width,minimum-scale=1" name=viewport>
+<title>The Chirp</title>
+<link rel="stylesheet" href="../asset/style.css" />
+<link rel="icon" type="image/png" href="img/favicon.png" />
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.js"></script>
+<style>
+.map { position: relative; height: 400px; width: 100%; }
+pre {
+    border-left: 4px solid goldenrod;
+    background: rgba(218,165,32,0.2);
+    page-break-inside: avoid;
+    line-height: 1.4;
+    overflow: auto;
+    padding: 0 16px;
+    word-wrap: break-word;
+}
+</style>
+</head>
+<body>
+<div id="menu-icon">
+	<div class="burger-line-1"></div>
+	<div class="burger-line-2"></div>
+	<div class="burger-line-3"></div>
+</div>
+<div id="menu" class="hide">
+	<a href="../index.html">About</a>
+	<a href="../projects.html">Projects</a>
+	<a href="../thechirp.html">The Chirp</a>
+</div>	
+<header>The Chirp<img class="bird-logo" src="../chirp/img/bird.svg"></header>	
+
+<div class="container">	
+	<h1>Esri REST API to Mapbox GL</h1>
+	<p>7/10/2023</p>
+	<hr>
+	<p>You have your GIS data in ArcGIS Online or ArcServer, but you want to make a Mapbox GL map with your data. If this is your issue, keep reading. Adding Esri vector data from a Map Service or Feature Service to a Mapbox GL map is extremely easy but might not be immediately obvious. Enter the <a href="https://developers.arcgis.com/rest/services-reference/enterprise/query-feature-service-layer-.htm">Esri REST API</a>.</p>
+    <p>In this example, we will pull <a href="https://data-pennshare.opendata.arcgis.com/datasets/PennShare::park-and-ride-1/about">Park and Ride</a> locations from PennDOT's Open Data portal. We use the Esri REST API to query the data as GeoJSON and follow Mapbox's example to <a href="https://docs.mapbox.com/mapbox-gl-js/example/external-geojson/">load data from an external GeoJSON file</a>. It is as simple as entering the REST API query URL inline for the data property for your data source.</p>
+    <pre><code>
+    map.on("load", () => {
+        map.addSource("source-park-ride", {
+            "type": "geojson",
+            "data": "https://gis.penndot.gov/arcgis/rest/services/opendata/parkandride/MapServer/0/query?where=1=1&outFields=DESCRIPTION,SPACES&outSR=4326&geometryPrecision=4&f=geojson"
+        });
+        map.addLayer({
+            "id": "layer-park-ride",
+            "type": "circle",
+            "source": "source-park-ride",
+            "paint": {
+                "circle-color": "#83f",
+                "circle-radius": 5,
+                "circle-stroke-width": 2,
+                "circle-stroke-color": "#fff"
+            }
+        });
+    });
+    </code></pre>
+	<div id="map" class="map"></div>
+	<div class="photo-caption">PennDOT Open Data, Park and Ride Locations</div>
+    <p>Keep in mind the caveat of the size of your data, since this technique is using GeoJSON, a big dataset could overwhelm your browser. Use query parameters to limit geometry precision, pair down attributes, or filter data with a WHERE REST query to reduce the size of your GeoJSON response and only send what data you need to the browser.</p>
+</div>
+<footer><hr><p>&copy Stephen Cline</p></footer>
+<script src="../asset/script.js"></script>
+<script>
+const map = new mapboxgl.Map({
+    container: "map",
+    zoom: 6,
+    center: [-77.55,40.9],
+    style: "mapbox://styles/mapbox/streets-v11",
+    accessToken: "pk.eyJ1IjoibWNjb3JtaWNrdGF5bG9yIiwiYSI6IkV1VTYyVXMifQ.zCU42TqxaSpRJvmH4Q094A"
+});
+
+map.on("load", () => {
+    map.addSource("source-park-ride", {
+        "type": "geojson",
+        "data": "https://gis.penndot.gov/arcgis/rest/services/opendata/parkandride/MapServer/0/query?where=1=1&outFields=DESCRIPTION,SPACES&outSR=4326&geometryPrecision=4&f=geojson",
+    });
+    map.addLayer({
+        "id": "layer-park-ride",
+        "type": "circle",
+        "source": "source-park-ride",
+        "paint": {
+            "circle-color": "#83f",
+            "circle-radius": 5,
+            "circle-stroke-width": 2,
+            "circle-stroke-color": "#fff"
+        }
+    });
+});
+</script>
+</body>
+</html>
