@@ -162,6 +162,21 @@ const data = {"type": "FeatureCollection","features": [
     },
     {
         "type": "Feature",
+        "geometry": {"type": "Point","coordinates": [-122.549282,45.669721]},
+        "properties": {
+            "id": 6,
+            "name": "Ruby Pho & Deli",
+            "address": "12004 NE Fourth Plain Blvd<br>Vancouver, WA 98682",
+            "date": "11/9/2023",
+            "value": 8,
+            "taste": 9,
+            "fresh": 8,
+            "sides": 8,
+            "review": "I ordered the P5, which cost $15. Broth was excellent, not greasy and just the right amount of salt. Everything was super fresh. Food came quickly, with thick green onions, and lime was cut in half not quarters. Plentyful meat and basil made this bowl filling. Top contender."
+        }
+    },
+    {
+        "type": "Feature",
         "geometry": {"type": "Point","coordinates": [-122.567782,45.622005]},
         "properties": {
             "id": null,
@@ -267,21 +282,6 @@ const data = {"type": "FeatureCollection","features": [
     },
     {
         "type": "Feature",
-        "geometry": {"type": "Point","coordinates": [-122.549282,45.669721]},
-        "properties": {
-            "id": null,
-            "name": "Ruby Pho & Deli",
-            "address": "12004 NE Fourth Plain Blvd<br>Vancouver, WA 98682",
-            "date": "",
-            "value": 0,
-            "taste": 0,
-            "fresh": 0,
-            "sides": 0,
-            "review": ""
-        }
-    },
-    {
-        "type": "Feature",
         "geometry": {"type": "Point","coordinates": [-122.565352,45.663746]},
         "properties": {
             "id": null,
@@ -345,6 +345,7 @@ const data = {"type": "FeatureCollection","features": [
 const map = new mapboxgl.Map({
     container: "map",
     bounds: [[-122.440540,45.714934],[-122.75351,45.57819]],
+    minZoom: 9,
     style: "mapbox://styles/mapbox/streets-v11",
     accessToken: "pk.eyJ1IjoibWNjb3JtaWNrdGF5bG9yIiwiYSI6IkV1VTYyVXMifQ.zCU42TqxaSpRJvmH4Q094A"
 });
@@ -373,7 +374,7 @@ map.on("load", () => {
             "text-field": ["get", "id"],
             "text-size": 12,
             "text-anchor": "center",
-            "text-allow-overlap": true,
+            "text-allow-overlap": false,
         },
         "paint": {
             "text-color": "#000",
