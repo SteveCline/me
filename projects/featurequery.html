@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Feature Query</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="description" content="This tool allows you to do a spatial intersect of a Feature Layer and of polygons that you draw. You can download the spatial query result in Esri JSON." />
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.css" rel="stylesheet">
+<link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.3/mapbox-gl-draw.css" type="text/css" />
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.js"></script>
+<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.3/mapbox-gl-draw.js"></script>
+<style>
+body {margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif;}
+h1 {color: #83f; margin: 0;}
+a {color: #83f;}
+#map {
+	height:500px;
+	width: 100%;
+}
+.button {
+	background-color: #83f;
+    border: none;
+    font-size: 12px;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 0.2em;
+    padding: 1em 2em;
+}
+.button:disabled {
+    cursor: not-allowed;
+}
+.input {
+	background: #fff;
+	padding: 0.5em;
+	border: 2px solid #ccc;
+	box-sizing: border-box;
+	border-radius: 0.2em;
+	display: block;
+}
+.input:focus {
+	border: 2px solid #83f;
+	box-shadow: 0px 0px 0px 3px rgba(136, 51, 255, 0.2);
+	outline: none;
+}
+.input:disabled {
+	background: #ccc;
+	color: #83f;
+	cursor: not-allowed;
+}
+.container {
+	max-width: 840px;
+	padding: 16px;
+	margin-left: auto;
+	margin-right: auto;
+}
+.grid-container {
+	display: grid;
+	grid-template-columns: auto max-content max-content;
+	grid-gap: 16px;
+	padding: 16px 0;
+}
+#warning-container {
+	color: #e74c3c;
+	font-weight: bold;
+	text-align: right;
+}
+.polygon-icon {
+	display: inline-block;
+    width: 16px;
+    height: 14px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+</style>
+</head>
+<body>
+<div class="container">	
+	<h1>Feature Query</h1>
+	<p>This tool allows you to do a spatial intersect of a Feature Layer and of polygons that you draw. You can download the spatial query result in Esri JSON. The Feature Layer can be either a public Feature Server, Map Server or Hosted Feature Layer from an ArcGIS Service endpoint. Need data? Search this list of <a href="https://mappingsupport.com/p/surf_gis/list-federal-state-county-city-GIS-servers.pdf" target="_blank">ArcGIS Servers</a> within the US.</p>
+	<ol style="margin: 0;">
+		<li>Enter an ArcGIS Service endpoint then click <b>Validate</b></li>
+		<li>Use the polygon tool <div class="mapbox-gl-draw_polygon polygon-icon"></div> to draw one or more polygons on the map</li>
+		<li>Click <b>Download Data</b> to get your Esri formatted JSON data</li>
+	</ol>
+	<div class="grid-container">
+		<input id="service-url" class="input" type="text" placeholder="Enter a Service URL...">
+		<button id="button-validate" class="button">Validate</button>
+		<button id="button-clear" class="button">Clear</button>
+	</div>
+	<div id="map"></div>
+	<div class="grid-container">
+		<div id="details-container" style="overflow-wrap: anywhere;"></div>
+		<div id="info-container"></div>
+		<div id="download-container"></div>
+	</div>
+</div>
+<script>
+const map = new mapboxgl.Map({
+    container: "map",
+    zoom: 2,
+    center: [-98.5,39.8],
+	projection: "globe",
+    style: "mapbox://styles/mapbox/streets-v11",
+    accessToken: "pk.eyJ1IjoibWNjb3JtaWNrdGF5bG9yIiwiYSI6IkV1VTYyVXMifQ.zCU42TqxaSpRJvmH4Q094A"
+});
+map.addControl(new mapboxgl.NavigationControl({visualizePitch:true}));
+
+const draw = new MapboxDraw({
+	displayControlsDefault: false,
+	controls: {polygon: true, trash: true},
+	styles: [
+    {
+        "id": "gl-draw-line",
+        "type": "line",
+        "filter": ["all", ["==", "$type", "LineString"], ["!=", "mode", "static"]],
+        "layout": {
+          "line-cap": "round",
+          "line-join": "round"
+        },
+        "paint": {
+          "line-color": "#000",
+          "line-width": 2
+        }
+    },
+    {
+      "id": "gl-draw-polygon-fill",
+      "type": "fill",
+      "filter": ["all", ["==", "$type", "Polygon"], ["!=", "mode", "static"]],
+      "paint": {
+        "fill-color": "#000",
+        "fill-opacity": 0.1
+      }
+    },
+    {
+      "id": "gl-draw-polygon-midpoint",
+      "type": "circle",
+      "filter": ["all",["==", "$type", "Point"],["==", "meta", "midpoint"]],
+      "paint": {
+        "circle-radius": 4,
+        "circle-color": "#000"
+      }
+    },
+    {
+      "id": "gl-draw-polygon-stroke-active",
+      "type": "line",
+      "filter": ["all", ["==", "$type", "Polygon"], ["!=", "mode", "static"]],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round"
+      },
+      "paint": {
+        "line-color": "#000",
+        "line-width": 2
+      }
+    },
+    {
+      "id": "gl-draw-polygon-and-line-vertex-halo-active",
+      "type": "circle",
+      "filter": ["all", ["==", "meta", "vertex"], ["==", "$type", "Point"], ["!=", "mode", "static"]],
+      "paint": {
+        "circle-radius": 6,
+        "circle-color": "#000"
+      }
+    },
+    {
+      "id": "gl-draw-polygon-and-line-vertex-active",
+      "type": "circle",
+      "filter": ["all", ["==", "meta", "vertex"], ["==", "$type", "Point"], ["!=", "mode", "static"]],
+      "paint": {
+        "circle-radius": 4,
+        "circle-color": "#fff",
+      }
+    }
+  ]
+});
+map.addControl(draw,"top-left");
+
+let drawGeoJson = {type:"FeatureCollection",features:[]};
+let featureTotal = 0;
+let maxRecordCount = undefined;
+
+map.on("style.load", function(){
+	map.setFog({});
+});
+map.on("load", function(){
+	map.addSource("source-extent", {
+			"type": "geojson",
+			"data": null
+		});
+	map.addLayer({
+		"id": "layer-extent",
+		"type": "line",
+		"source": "source-extent",
+		"paint": {
+			"line-color": "#000",
+			"line-width": 2,
+			"line-dasharray": [2,2]
+		}
+	});
+	map.addSource("source-feature", {
+		"type": "geojson",
+		"data": null
+	});
+});
+map.on("draw.create", function (e) {
+	e.features.forEach((item) => {
+		drawGeoJson.features.push(item);
+	});
+	addLayer(inputServiceURL.value);
+});
+map.on("draw.update", function (e) {
+	e.features.forEach((item) => {
+		const index = drawGeoJson.features.findIndex(a => a.id === item.id);
+		drawGeoJson.features.splice(index,1,item);
+	});
+	addLayer(inputServiceURL.value);
+});
+map.on("draw.delete", function (e) {
+	e.features.forEach((item) => {
+		const index = drawGeoJson.features.findIndex(a => a.id === item.id);
+		drawGeoJson.features.splice(index,1);
+	});
+	addLayer(inputServiceURL.value);
+});
+
+const inputServiceURL = document.querySelector("#service-url");
+const buttonValidate = document.querySelector("#button-validate");
+const buttonClear = document.querySelector("#button-clear");
+const detailsContainer = document.querySelector("#details-container");
+const infoContainer = document.querySelector("#info-container");
+const downloadContainer = document.querySelector("#download-container");
+const drawPolygon = document.getElementsByClassName("mapbox-gl-draw_polygon");
+drawPolygon[1].disabled = true;
+
+buttonValidate.addEventListener("click", function(e) {
+	getServiceJSON(inputServiceURL.value);
+});
+buttonClear.addEventListener("click", function(e) {
+	inputServiceURL.disabled = false;
+	inputServiceURL.value = "";
+	buttonValidate.disabled = false;
+	buttonValidate.style.backgroundColor = "#83f";
+	buttonValidate.innerText = "Validate";
+	map.getSource("source-extent").setData({type:"FeatureCollection",features:[]});
+	map.getSource("source-feature").setData({type:"FeatureCollection",features:[]});
+	drawGeoJson = {type:"FeatureCollection",features:[]};
+	featureTotal = 0;
+	draw.deleteAll();
+	detailsContainer.innerHTML = "";
+	infoContainer.innerHTML = "";
+	downloadContainer.innerHTML = "";
+	map.flyTo({center: [-98.5,39.8], zoom: 2});
+	drawPolygon[1].disabled = true;
+});
+
+inputServiceURL.addEventListener("focus", function(e){
+	buttonValidate.style.backgroundColor = "#83f";
+	buttonValidate.innerText = "Validate";
+});
+
+function getExtent(serviceURL){
+	const url = serviceURL + "/query?where=1=1&returnExtentOnly=true&outSR=4326&f=json";
+    fetch(url)
+    .then(function(response){
+        return response.json();
+    })
+    .then(function(data){
+		map.fitBounds([[data.extent.xmax, data.extent.ymax],[data.extent.xmin, data.extent.ymin]], {padding:50});
+		const geojson = {type:"FeatureCollection",features:[{type:"Feature",geometry:{coordinates:[[[data.extent.xmax,data.extent.ymax],[data.extent.xmin,data.extent.ymax],[data.extent.xmin,data.extent.ymin],[data.extent.xmax,data.extent.ymin],[data.extent.xmax,data.extent.ymax]]],type:"Polygon"}}]};
+		map.getSource("source-feature").setData({type:"FeatureCollection",features:[]});
+		map.getSource("source-extent").setData(geojson);
+    })
+    .catch(function(error){
+        console.log(error);
+    });
+}
+
+function addLayer(serviceURL){
+	if (drawGeoJson.features.length > 0){
+		let rings = [];
+		drawGeoJson.features.forEach((item) => {
+			const ring = item.geometry.coordinates[0];
+			rings.push(ring);
+		});
+		const geo = encodeURI(JSON.stringify({"rings":rings}));
+		const geojson = serviceURL + "/query?where=1=1&outFields=&geometry=" + geo + "&geometryType=esriGeometryPolygon&inSR=4326&spatialRel=esriSpatialRelIntersects&outSR=4326&geometryPrecision=6&f=geojson";
+		map.getSource("source-feature").setData(geojson);
+		document.querySelector("#button-download-json").disabled = false;
+		getSelectedFeatureCount(serviceURL, geo);
+	}
+	else {
+		map.getSource("source-feature").setData({type:"FeatureCollection",features:[]});
+		document.querySelector("#feature-count").innerText = "0";
+		document.querySelector("#button-download-json").disabled = true;
+	}
+}
+
+function getServiceJSON(serviceURL){
+	const url = serviceURL + "?f=json";
+    fetch(url)
+    .then(function(response){
+        return response.json();
+    })
+    .then(function(data){
+		validateService(data);
+    })
+    .catch(function(error){
+        console.log(error);
+		validateService(error);
+    });
+}
+
+function setGeoType(esriGeoType){
+	if (map.getLayer("layer-feature")) {
+		map.removeLayer("layer-feature");
+	}
+	if (map.getLayer("layer-feature-polygon")) {
+		map.removeLayer("layer-feature-polygon");
+	}
+	if (esriGeoType === "esriGeometryPolygon"){
+		map.addLayer({
+            "id": "layer-feature-polygon",
+            "type": "fill",
+            "source": "source-feature",
+            "paint": {
+                "fill-color": "#83f",
+                "fill-opacity": 0.1,
+            }
+        });
+        map.addLayer({
+            "id": "layer-feature",
+            "type": "line",
+            "source": "source-feature",
+            "paint": {
+                "line-color": "#83f",
+                "line-width": 2,
+            },
+			"layout": {
+                "line-cap": "round",
+                "line-join": "round"
+            }
+        });
+	}
+	else if (esriGeoType === "esriGeometryPolyline"){
+		map.addLayer({
+            "id": "layer-feature",
+            "type": "line",
+            "source": "source-feature",
+            "paint": {
+                "line-color": "#83f",
+                "line-width": 2,
+            },
+			"layout": {
+                "line-cap": "round",
+                "line-join": "round"
+            }
+        });
+	}
+	else if (esriGeoType === "esriGeometryPoint" || esriGeoType === "esriGeometryMultipoint"){
+		map.addLayer({
+			"id": "layer-feature",
+			"type": "circle",
+			"source": "source-feature",
+			"paint": {
+				"circle-color": "#83f",
+				"circle-radius": 5,
+				"circle-stroke-width": 2,
+				"circle-stroke-color": "#fff"
+			}
+		});
+	}
+}
+
+function validateService(serviceJSON){
+	if (serviceJSON.type === "Feature Layer" && serviceJSON.capabilities.includes("Query")  && serviceJSON.supportedQueryFormats.includes("JSON") && serviceJSON.supportedQueryFormats.includes("geoJSON")){
+		buttonValidate.style.backgroundColor = "#2ecc71";
+		buttonValidate.innerHTML = "&#10004; Valid";
+		buttonValidate.disabled = true; 
+		inputServiceURL.disabled = true;
+		drawPolygon[1].disabled = false;
+		drawGeoJson = {type:"FeatureCollection",features:[]};
+		draw.deleteAll();
+		maxRecordCount = serviceJSON.maxRecordCount;
+		setGeoType(serviceJSON.geometryType);
+		buildDetailsContainer(serviceJSON);
+		buildinfoContainer(serviceJSON);
+		buildDownloadContainer(serviceJSON);
+		getExtent(inputServiceURL.value);
+	}
+	else {
+		buttonValidate.style.backgroundColor = "#e74c3c";
+		buttonValidate.innerHTML = "&#10008; Not Valid";
+	}
+}
+
+function getTotalFeatureCount(serviceURL){
+	const url = serviceURL + "/query?where=1=1&returnCountOnly=true&f=json";
+    fetch(url)
+    .then(function(response){
+        return response.json();
+    })
+    .then(function(data){
+		featureTotal = data.count;
+		document.querySelector("#feature-total").innerText = featureTotal;
+    })
+    .catch(function(error){
+        console.log(error);
+    });
+}
+
+function getSelectedFeatureCount(serviceURL, geo){
+	const url = serviceURL + "/query?where=1=1&geometry=" + geo + "&geometryType=esriGeometryPolygon&inSR=4326&spatialRel=esriSpatialRelIntersects&returnCountOnly=true&f=json";
+    fetch(url)
+    .then(function(response){
+        return response.json();
+    })
+    .then(function(data){
+		if (document.querySelector("#warning-container")){
+			infoContainer.removeChild(document.querySelector("#warning-container"));
+		}
+		if (data.count > maxRecordCount) {
+			const div = document.createElement("div");
+			div.id = "warning-container";
+			div.innerText = "Warning! Max Exceeded";
+			infoContainer.prepend(div);
+		}
+		document.querySelector("#feature-count").innerText = data.count;
+    })
+    .catch(function(error){
+        console.log(error);
+    });
+}
+
+function buildDetailsContainer(serviceJSON){
+	const h1 = document.createElement("h1");
+	h1.innerHTML = serviceJSON.name;
+	const div = document.createElement("div");
+	div.innerText = "Geo Type: " + serviceJSON.geometryType;
+	detailsContainer.append(h1,div);
+}
+
+function buildinfoContainer(serviceJSON){
+	const div = document.createElement("div");
+	div.style.textAlign = "right";
+	div.innerHTML = "<span id='feature-count'>0</span> selected of <span id='feature-total'>0</span> total features<br>max selection allowed: " + serviceJSON.maxRecordCount;
+	infoContainer.append(div);
+	getTotalFeatureCount(inputServiceURL.value);
+}
+
+function buildDownloadContainer(serviceJSON){
+	const buttonDownload = document.createElement("button");
+	buttonDownload.innerText = "Download Data";
+	buttonDownload.disabled = true;
+	buttonDownload.id = "button-download-json";
+	buttonDownload.classList.add("button");
+	buttonDownload.addEventListener("click", function(e) {
+		downloadEsriJSON(inputServiceURL.value, serviceJSON.name);
+	});
+	downloadContainer.append(buttonDownload);
+}
+
+//DOWNLOAD
+function downloadEsriJSON(serviceURL, filename){
+	let rings = [];
+	drawGeoJson.features.forEach((item) => {
+		const ring = item.geometry.coordinates[0];
+		rings.push(ring);
+	});
+	const geo = encodeURI(JSON.stringify({"rings":rings}));
+	const url = serviceURL + "/query?where=1=1&outFields=*&geometry=" + geo + "&geometryType=esriGeometryPolygon&inSR=4326&spatialRel=esriSpatialRelIntersects&f=json";
+	fetch(url)
+    .then(function(response){
+        return response.json();
+    })
+    .then(function(data){
+		downloadAsFile(data, filename + ".json");
+    })
+    .catch(function(error){
+        console.log(error);
+    });
+}
+
+function downloadAsFile(data, filename) {
+    const blob = new Blob([JSON.stringify(data)], {type: "text/json"});
+    const link = document.createElement("a");
+    link.download = filename;
+    link.href = window.URL.createObjectURL(blob);
+    link.dataset.downloadurl = ["text/json", link.download, link.href].join(":");
+    const evt = new MouseEvent("click", {view: window, bubbles: true, cancelable: true});
+    link.dispatchEvent(evt);
+    link.remove();
+};
+</script>
+
+</body>
+</html>
