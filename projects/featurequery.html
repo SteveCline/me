@@ -48,7 +48,7 @@ a {color: #83f;}
 	cursor: not-allowed;
 }
 .container {
-	max-width: 840px;
+	max-width: 1000px;
 	padding: 16px;
 	margin-left: auto;
 	margin-right: auto;
@@ -243,13 +243,10 @@ buttonClear.addEventListener("click", function(e) {
 	buttonValidate.innerText = "Validate";
 	map.getSource("source-extent").setData({type:"FeatureCollection",features:[]});
 	map.getSource("source-feature").setData({type:"FeatureCollection",features:[]});
-	drawGeoJson = {type:"FeatureCollection",features:[]};
 	featureTotal = 0;
-	draw.deleteAll();
 	detailsContainer.innerHTML = "";
 	infoContainer.innerHTML = "";
 	downloadContainer.innerHTML = "";
-	map.flyTo({center: [-98.5,39.8], zoom: 2});
 	drawPolygon[1].disabled = true;
 });
 
@@ -265,9 +262,10 @@ function getExtent(serviceURL){
         return response.json();
     })
     .then(function(data){
-		map.fitBounds([[data.extent.xmax, data.extent.ymax],[data.extent.xmin, data.extent.ymin]], {padding:50});
+		if (drawGeoJson.features.length === 0){
+			map.fitBounds([[data.extent.xmax, data.extent.ymax],[data.extent.xmin, data.extent.ymin]], {padding:50});
+		}
 		const geojson = {type:"FeatureCollection",features:[{type:"Feature",geometry:{coordinates:[[[data.extent.xmax,data.extent.ymax],[data.extent.xmin,data.extent.ymax],[data.extent.xmin,data.extent.ymin],[data.extent.xmax,data.extent.ymin],[data.extent.xmax,data.extent.ymax]]],type:"Polygon"}}]};
-		map.getSource("source-feature").setData({type:"FeatureCollection",features:[]});
 		map.getSource("source-extent").setData(geojson);
     })
     .catch(function(error){
@@ -378,14 +376,13 @@ function validateService(serviceJSON){
 		buttonValidate.disabled = true; 
 		inputServiceURL.disabled = true;
 		drawPolygon[1].disabled = false;
-		drawGeoJson = {type:"FeatureCollection",features:[]};
-		draw.deleteAll();
 		maxRecordCount = serviceJSON.maxRecordCount;
 		setGeoType(serviceJSON.geometryType);
 		buildDetailsContainer(serviceJSON);
 		buildinfoContainer(serviceJSON);
 		buildDownloadContainer(serviceJSON);
 		getExtent(inputServiceURL.value);
+		addLayer(inputServiceURL.value);
 	}
 	else {
 		buttonValidate.style.backgroundColor = "#e74c3c";
