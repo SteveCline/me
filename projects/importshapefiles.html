@@ -1,0 +1,77 @@
+
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+<title>Import Shapefiles</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://unpkg.com/shpjs@5.0.1/dist/shp.js"></script>
+
+<style>
+#map { height: 400px; width:100%;}
+</style>
+</head>
+<body>
+<h1>Import Shapefiles Leaflet Plugin</h1>
+<p>A simple Leaflet control to import zipped shapefiles (any projection), convert them to geoJSON and add them to the map and a layer control. This leaflet plugin built from <a href="https://github.com/calvinmetcalf/shapefile-js/">shapefile-js</a>. One shapefile per zipfile.</p>
+<div id="map"></div>
+
+<script>
+const map = L.map("map");
+map.fitBounds([[50,-66],[25,-125]]);
+
+const layerControlBasemap = {
+	"Streets": L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}").addTo(map),
+	"Topographic": L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}"),
+	"Imagery": L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}")
+};
+const layerControlOverlay = {};
+const layerControl = L.control.layers(layerControlBasemap,layerControlOverlay).addTo(map);
+
+function getShapefiles(files){
+	for (var i = 0; i < files.length; i++){
+		const readFile = new FileReader();
+		readFile.readAsArrayBuffer(files[i]); 
+		readFile.onload = async (e) => {
+			const geoJson = await shp(e.target.result);
+			const layer = L.geoJSON(geoJson).addTo(map);
+			layerControl.addOverlay(layer,geoJson.fileName);
+			map.fitBounds(layer.getBounds());
+		}
+	}
+}
+L.Control.ImportShapfiles = L.Control.extend({
+    onAdd: function(map) {
+        const container = L.DomUtil.create("div", "leaflet-bar leaflet-control");
+		this.input = L.DomUtil.create("input", "", container);
+		this.input.id = "import-shapefiles-file-input";
+		this.input.type = "file";
+		this.input.accept = ".zip";
+		this.input.setAttribute("multiple", true);
+		this.input.style = "display:none";
+		this.link = L.DomUtil.create("a", "import-shapefiles-anchor", container);
+        this.link.title = "Add Zipped Shapefile";
+        this.link.href = "#";
+        this.link.setAttribute("role", "button");
+		this.icon = L.DomUtil.create("span", "import-shapefiles-icon", this.link);
+		this.icon.innerText = "SHP";
+		this.icon.style = "font-weight:bold";
+		L.DomEvent.addListener(this.input, "change", (e) => getShapefiles(e.target.files),this);
+		L.DomEvent.addListener(this.link, "click", (e) => document.getElementById("import-shapefiles-file-input").click(),this);
+		L.DomEvent.disableClickPropagation(container);
+        return container;
+    },
+    onRemove: function(map) {
+		L.DomEvent.removeListener(this.input, "change", (e) => getShapefiles(e.target.files),this);
+		L.DomEvent.removeListener(this.link, "click", (e) => document.getElementById("import-shapefiles-file-input").click(),this);
+    }
+});
+L.control.importShapfiles = (opts) => {
+    return new L.Control.ImportShapfiles(opts);
+}
+L.control.importShapfiles({position:"topleft"}).addTo(map);
+</script>
+</body>
+</html>
