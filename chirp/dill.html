@@ -91,6 +91,7 @@ dataDill.features.forEach(function(item,index){
 	const p = document.createElement("p");
 	const p2 = document.createElement("p");
 	const img = document.createElement("img");
+	img.style.width = "100%";
 	img.src = "img/blogpics/dill" + item.properties.photo + ".jpg";
 	p.innerText = item.properties.photo + ". " + item.properties.place + " (" + item.properties.date + ")";
 	p2.innerText = item.properties.about;
