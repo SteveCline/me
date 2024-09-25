@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset=utf-8>
+<meta content="Stephen Cline" name=author>
+<meta content="width=device-width,minimum-scale=1" name=viewport>
+<title>The Chirp</title>
+<link rel="stylesheet" href="../asset/style.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" />
+<style>
+    #map {position: relative; height:450px;}
+    .map-icon {
+		background: #b4e61d;
+		color: #1c4f3f;
+		border: 2px solid #1c4f3f;
+		border-radius: 20px;
+		font-family: 'Open Sans', sans-serif;
+		font-weight: bold;
+    }
+	.map-icon p {
+		text-align: center;
+		margin-top: -1px;
+	}
+ </style>
+<link rel="icon" type="image/png" href="img/favicon.png" />
+</head>
+<body>
+<div id="menu-icon">
+	<div class="burger-line-1"></div>
+	<div class="burger-line-2"></div>
+	<div class="burger-line-3"></div>
+</div>
+<div id="menu" class="hide">
+	<a href="../index.html">About</a>
+	<a href="../projects.html">Projects</a>
+	<a href="../thechirp.html">The Chirp</a>
+</div>	
+<header>The Chirp<img class="bird-logo" src="../chirp/img/bird.svg"></header>	
+
+<div class="container">	
+	<h1>Adventures of Dill</h1>
+	<p>9/25/2024</p>
+	<hr>
+    <p>We recently retired our trusty tent of 10 years "Big Red" after a long and prosperous life. Our new car camping tent is a dark forest green with neon green trim which we have lovingly named Dill.</p>
+    <p>We wish we could have documented all the epic trips of Big Red, but with a new tent comes a new opportunity. This article will serve as a tracker for all the adventures of our car camping tent. Long live Dill!</p>
+    <p></p>
+    
+    <div id="map" class="full-width"></div>
+    <div id="list"></div>
+</div>
+<footer><hr><p>&copy Stephen Cline</p></footer>
+<script src="../asset/script.js"></script>
+<script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet.js"></script>
+<script>
+const map = L.map("map",{scrollWheelZoom:false});
+L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",{attribution: "<a href='http://www.esri.com/'>esri</a>"}).addTo(map);
+
+const dataDill = {"type":"FeatureCollection","features":[
+    {"type":"Feature","properties":{"photo":1, "place":"Black Canyon Campground","date":"6/28/2024","about":"Maiden voyage for Dill! Solo camping near Oakridge to do the Transcascadia Bonanza. 5 MTB shuttles in one rad day in Willamette National Forest."},"geometry":{"type":"Point","coordinates":[-122.561727,43.806008]}},
+    {"type":"Feature","properties":{"photo":2, "place":"Eightmile Campground","date":"7/19/2024","about":"Two night stay in preparation for backpacking the Enchantments with Jamie, Austin and Jenna in Okanogan-Wenatchee National Forest."},"geometry":{"type":"Point","coordinates":[-120.766021,47.550919]}},
+    {"type":"Feature","properties":{"photo":3, "place":"Iron Creek Campground","date":"9/20/2024","about":"Two night mountain biking weekend doing Strawberry Ridge and Goat Mountain with the crew in Gifford Pinchot National Forest."},"geometry":{"type":"Point","coordinates":[-121.982810,46.431350]}}
+]}
+
+
+
+var layerDill = L.geoJson(dataDill,{
+	onEachFeature: function(feature,layer){
+		layer.bindPopup(feature.properties.place, {closeButton:false});
+	},
+	pointToLayer: function (feature, latlng) {
+		return L.marker(latlng, {
+			icon:L.divIcon({
+			html: "<p>" + feature.properties.photo + "</p>",
+			className: "map-icon",
+			iconSize: [20,20],
+			popupAnchor: L.point(2,-13)
+			}),
+			riseOnHover: true
+			});
+	}
+}).addTo(map);
+map.fitBounds(layerDill.getBounds());
+
+
+
+const list = document.getElementById("list");
+
+//list.append(p);
+dataDill.features.forEach(function(item,index){
+	const div = document.createElement("div");
+	const p = document.createElement("p");
+	const p2 = document.createElement("p");
+	const img = document.createElement("img");
+	img.src = "img/blogpics/dill" + item.properties.photo + ".jpg";
+	p.innerText = item.properties.photo + ". " + item.properties.place + " (" + item.properties.date + ")";
+	p2.innerText = item.properties.about;
+	div.append(p,p2,img);
+	list.append(div);
+});
+
+
+
+
+
+
+</script>
+
+
+</body>
+</html>
