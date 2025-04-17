@@ -1,0 +1,160 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset=utf-8>
+<meta content="Stephen Cline" name=author>
+<meta content="width=device-width,minimum-scale=1" name=viewport>
+<title>The Chirp</title>
+<link rel="stylesheet" href="../asset/style.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" />
+<style>
+    #map {position: relative; height:400px;}
+	#stat-box {font-weight: bold;}
+ </style>
+<link rel="icon" type="image/png" href="img/favicon.png" />
+</head>
+<body>
+<div id="menu-icon">
+	<div class="burger-line-1"></div>
+	<div class="burger-line-2"></div>
+	<div class="burger-line-3"></div>
+</div>
+<div id="menu" class="hide">
+	<a href="../index.html">About</a>
+	<a href="../projects.html">Projects</a>
+	<a href="../thechirp.html">The Chirp</a>
+</div>	
+<header>The Chirp<img class="bird-logo" src="../chirp/img/bird.svg"></header>	
+
+<div class="container">	
+	<h1>Linear Referencing with Turf.js</h1>
+	<p>4/18/2025</p>
+	<hr>
+	<p>Last week I attended my first AASHTO GIS-T conference in Portland. GIS is already a small profession and this was specifically for GIS in Transportation an even smaller subset of the community. Most who attended the conference worked for a state DOT or a consultant who works for those DOTs. I met many people whose sole focus is <a href="https://pro.arcgis.com/en/pro-app/latest/help/data/linear-referencing/introduction-to-linear-referencing.htm">Linear Referencing Systems</a>, often called LRS. Doing GIS for over 20 years, I have only dabbled a little bit in LRS so it peaked my interest in this niche of GIS.</p>
+	<p>Instead of using XY to locate things, linear referencing locates things in relation to a network, such as roads, pipelines or river networks. It measures the distance down a line segment of the network and optionally an offset distance from the line segment (left side or right side). As an example, you could say, the traffic sign is located 50 feet from the beginning of Smith Street and it is offset to the right by 10 feet, this helps a field worker find the traffic sign by measuring from the beginning of Smith Street without the need for a GPS.</p>
+	<p>It is a rather unconventional way to locate things and has a few pros and cons. One of the pros is <a href="https://pro.arcgis.com/en/pro-app/latest/help/data/linear-referencing/linear-referencing-scenarios.htm">dynamic segmentation</a> to store many attributes within one line segment. At the conference the buzzword, conflation, was used frequently.</p>
+	<p>This got me thinking of one of my favorite JS libraries, <a href="https://turfjs.org/">Turf.js</a>. This library does geospatial analysis quickly in a web browser on GeoJSON data. Turf has a few methods for working with line data so I thought it would cool to recreate some LRS functionality with it. My example below queries <a href="https://data-pennshare.opendata.arcgis.com/datasets/d9a2a5df74cf4726980e5e276d51fe8d_0/explore">PennDOT's RMS</a> data and returns the state route segment, the measure from the start of the line, and the offset distance from the line.</p>
+	<div id="stat-box"><p>Drag and Drop pin near a PA State Route.</p></div>
+	<div id="map" class="full-width"></div>
+	<p>All the work is done with three turf methods, <a href="https://turfjs.org/docs/api/nearestPointOnLine">turf.nearestPointOnLine</a>, <a href="https://turfjs.org/docs/api/lineSlice">turf.lineSlice</a>, and <a href="https://turfjs.org/docs/api/length">turf.length</a>. With these and a few other methods, you can do pretty much any LRS operation right on the web and super fast. I would encourage any LRS expert to look at Turf.js to see if it is right for your project or tool. GIS doesn't need to be hard, slow, or inaccessible in some complex application and that is why I like Turf.</p>
+</div>
+<footer><hr><p>&copy Stephen Cline</p></footer>
+<script src="../asset/script.js"></script>
+<script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@turf/turf@7.2/turf.min.js"></script>
+
+<script>
+const map = L.map("map");
+map.fitBounds([[40.3227,-76.7937],[40.2179,-77.0134]]);
+L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",{attribution: "<a href='http://www.esri.com/'>esri</a>"}).addTo(map);
+const statBox = document.getElementById("stat-box");
+const layerMeasure = L.geoJson(null,{color:"#040d8f",weight:5,lineCap:"butt",dashArray:[4,3]}).addTo(map);
+const layerLRS = L.geoJson(null,{weight:5,lineCap:"butt"}).addTo(map);
+const offsetLine = L.polyline([], {color:"red"}).addTo(map);
+const marker = L.marker([40.27035,-76.9036], {draggable:true}).addTo(map);
+const closestPointOnLine = L.geoJson(null, {
+    pointToLayer: function (feature, latlng) {
+        return L.circleMarker(latlng, {
+			radius: 4,
+			fillColor: "red",
+			color: "#000",
+			weight: 1,
+			opacity: 1,
+			fillOpacity: 1
+		});
+    }
+}).addTo(map);
+const startPointOnLine = L.geoJson(null, {
+    pointToLayer: function (feature, latlng) {
+        return L.circleMarker(latlng, {
+			radius: 4,
+			fillColor: "#0ac222",
+			color: "#000",
+			weight: 1,
+			opacity: 1,
+			fillOpacity: 1
+		});
+    }
+}).addTo(map);
+
+function indexOfSmallest(a) {
+	return a.indexOf(Math.min.apply(Math, a));
+}
+
+function kmToFeet(km){
+	return Math.round(km * 3280.8398950131);
+}
+
+function clearLayers(){
+	layerMeasure.clearLayers();
+	layerLRS.clearLayers();
+	closestPointOnLine.clearLayers();
+	startPointOnLine.clearLayers();
+	offsetLine.setLatLngs([]);
+	statBox.innerHTML = "";
+}
+
+function calcDistance(lrsData){
+	const pt = turf.point([marker.getLatLng().lng,marker.getLatLng().lat]);
+	let a = [];
+	lrsData.features.forEach((e) => {
+		const n = turf.nearestPointOnLine(e.geometry, pt);
+		a.push(n.properties.dist);
+	});
+	const segment = lrsData.features[indexOfSmallest(a)];
+	//console.log(segment);
+	layerLRS.addData(segment);
+	map.fitBounds(layerLRS.getBounds());
+	const nearest = turf.nearestPointOnLine(segment.geometry, pt);
+	offsetLine.setLatLngs([[marker.getLatLng().lat,marker.getLatLng().lng],[nearest.geometry.coordinates[1],nearest.geometry.coordinates[0]]]);
+	const ptStart = turf.point(segment.geometry.coordinates[0]);
+	const ptEnd = turf.point(nearest.geometry.coordinates);
+	const slicedLine = turf.lineSlice(ptStart, ptEnd, segment.geometry);
+	layerMeasure.addData(slicedLine);
+	closestPointOnLine.addData(nearest);
+	startPointOnLine.addData(ptStart);
+	layerMeasureLength = turf.length(slicedLine);
+	statBox.innerHTML = "<p><span style='color:#38f;'>SR: " + segment.properties.ST_RT_NO + " SEG: " + segment.properties.SEG_NO + "</span>  <span style='color:#040d8f;'>Measure: " + kmToFeet(layerMeasureLength) + " ft.</span>   <span style='color:red;'>Offset: " + kmToFeet(nearest.properties.dist) + " ft.</span></p>";
+}
+
+function notNearSR(dist){
+	statBox.innerHTML = "<p>Pin is farther than " + dist + " feet from a State Route. Try again.</p>";
+}
+
+function getRMSSEG(bufferDistanceFt){
+	statBox.innerHTML = "<p>Searching....</p>";
+	const coords = [marker.getLatLng().lng,marker.getLatLng().lat];
+	const url = "https://gis.penndot.pa.gov/gis/rest/services/opendata/roadwaysegments/MapServer/0";
+	const query = "/query?where=1%3D1&outFields=ST_RT_NO,SEG_NO,STREET_NAME&geometry=" + coords + "&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&distance=" + bufferDistanceFt + "&units=esriSRUnit_Foot&outSR=4326&f=geojson";
+	fetch(url + query)
+	.then(function(response){
+		return response.json();
+	})
+	.then(function(data){
+		if (data.features.length > 0){
+			calcDistance(data);
+		}
+		else {
+			notNearSR(bufferDistanceFt);
+		}
+	})
+	.catch(function(error){
+		console.log(error);
+	});
+}
+
+marker.bindPopup("Drag & Drop Me!",{closeButton:false}).openPopup();
+marker.on("popupclose", function(){
+    marker.unbindPopup();
+});
+marker.on("dragend", function(){
+	clearLayers();
+	getRMSSEG(500);
+});
+
+</script>
+
+
+</body>
+</html>
