@@ -43,8 +43,6 @@
 	<hr>
     <p>We recently retired our trusty tent of 10 years "Big Red" after a long and prosperous life. Our new car camping tent is a dark forest green with neon green trim which we have lovingly named Green Gherkin aka Dill.</p>
     <p>We wish we could have documented all the epic trips of Big Red, but with a new tent comes a new opportunity. This article will serve as a tracker for all the adventures of our car camping tent. Long live Dill!</p>
-    <p></p>
-    
     <div id="map" class="full-width"></div>
     <div id="list"></div>
 </div>
@@ -58,10 +56,9 @@ L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map
 const dataDill = {"type":"FeatureCollection","features":[
     {"type":"Feature","properties":{"photo":1, "place":"Black Canyon Campground","date":"6/28/2024","about":"Maiden voyage for Dill! Solo camping near Oakridge to do the Transcascadia Bonanza. 5 MTB shuttles in one rad day in Willamette National Forest."},"geometry":{"type":"Point","coordinates":[-122.561727,43.806008]}},
     {"type":"Feature","properties":{"photo":2, "place":"Eightmile Campground","date":"7/19/2024","about":"Two night stay in preparation for backpacking the Enchantments with Jamie, Austin and Jenna in Okanogan-Wenatchee National Forest."},"geometry":{"type":"Point","coordinates":[-120.766021,47.550919]}},
-    {"type":"Feature","properties":{"photo":3, "place":"Iron Creek Campground","date":"9/20/2024","about":"Two night mountain biking weekend doing Strawberry Ridge and Goat Mountain with the crew in Gifford Pinchot National Forest."},"geometry":{"type":"Point","coordinates":[-121.982810,46.431350]}}
+    {"type":"Feature","properties":{"photo":3, "place":"Iron Creek Campground","date":"9/20/2024","about":"Two night mountain biking weekend doing Strawberry Ridge and Goat Mountain with the crew in Gifford Pinchot National Forest."},"geometry":{"type":"Point","coordinates":[-121.982810,46.431350]}},
+	{"type":"Feature","properties":{"photo":4, "place":"Crooked River Campground","date":"5/25/2025","about":"Two night camping weekend with the crew. Activities included mountain biking in Sisters, gravel biking, and climbing at Smith Rock."},"geometry":{"type":"Point","coordinates":[-121.255125,44.538984]}}
 ]}
-
-
 
 var layerDill = L.geoJson(dataDill,{
 	onEachFeature: function(feature,layer){
@@ -80,12 +77,7 @@ var layerDill = L.geoJson(dataDill,{
 	}
 }).addTo(map);
 map.fitBounds(layerDill.getBounds());
-
-
-
 const list = document.getElementById("list");
-
-//list.append(p);
 dataDill.features.forEach(function(item,index){
 	const div = document.createElement("div");
 	const p = document.createElement("p");
@@ -98,11 +90,6 @@ dataDill.features.forEach(function(item,index){
 	div.append(p,p2,img);
 	list.append(div);
 });
-
-
-
-
-
 
 </script>
 
